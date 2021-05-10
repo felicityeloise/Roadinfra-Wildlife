@@ -1,0 +1,2 @@
+# Roadinfra-Wildlife
+This research was conducted as part of The University of Queensland Bachelor of Science (Honours) Program. This project tied to determine whether Australian wildlife used under-road drainage culverts or crossed roads directly. If so, this project also aimed to determine whether the interactions between animals characteristics, the environment and culvert properties influenced culvert use. 
