@@ -3,7 +3,7 @@
 
 
 getwd()
-setwd("/Users/felicity/Desktop/Honours/AGRC6631 - Research methodologies/Data structure/Analysis") # Set working directory
+setwd("/Users/felicity/Desktop/Honours/AGRC6002/Analysis/Roadinfra-Wildlife") # Set working directory
 
 # Read in data
 dat <- read.table("Occurrence.txt", header = T, stringsAsFactors = T) # Read the occurrence data into R, ensuring that factor variables are assigned
@@ -574,8 +574,8 @@ AICc(Mnull.1); AICc(M4) # Better than null
 
 
 # Plots for thesis
-dev.new(width=15, height=15, dpi=80, pointsize=23, noRStudioGD = T)
-par(mfrow=c(2, 1), mgp=c(2.5,1,0), mar=c(4,4,3,3), cex = 1, las = 1)
+dev.new(width=13, height=5, dpi=80, pointsize=20, noRStudioGD = T)
+par(mfrow=c(1, 2), mgp=c(2.5,1,0), mar=c(4,4,2,2), oma=c(0,0,0,6), cex = 1, las = 1)
 
 
 plot(prM3b$Veg_dense[prM3b$Type=="C"], prM3b$fit[prM3b$Type=="C"], pch=20, ylim=c(min(prM3b$lci), max(prM3b$uci)), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type="l", las = 1)
@@ -584,9 +584,7 @@ lines(prM3b$Veg_dense[prM3b$Type=="C"], prM3b$uci[prM3b$Type=="C"], lty=2)
 lines(prM3b$Veg_dense[prM3b$Type=="R"], prM3b$fit[prM3b$Type=="R"], lty=1, col="red")
 lines(prM3b$Veg_dense[prM3b$Type=="R"], prM3b$lci[prM3b$Type=="R"], lty=2, col ="red")
 lines(prM3b$Veg_dense[prM3b$Type=="R"], prM3b$uci[prM3b$Type=="R"], lty=2, col ="red")
-legend("topright", legend = "Veg. density + Position", cex = 1, bty ="n", text.width = 1)
-title(main = "(a)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topright",legend =c("Culvert", "Road"), col = c("black", "red"), lty=2, lwd =1, cex = 1, bty ="n", text.width = 0.2)
+title(main = "(a) Veg. density + Position", outer = F, adj = 0, cex.main = 1, line = 0.5, font.main=1)
 
 plot(prM3$Veg_dense[prM3$Type=="C"], prM3$fit[prM3$Type=="C"], pch=20, ylim=c(min(prM3$lci), max(prM3$uci)), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type="l", las = 1)
 lines(prM3$Veg_dense[prM3$Type=="C"], prM3$lci[prM3$Type=="C"], lty=2)
@@ -594,9 +592,11 @@ lines(prM3$Veg_dense[prM3$Type=="C"], prM3$uci[prM3$Type=="C"], lty=2)
 lines(prM3$Veg_dense[prM3$Type=="R"], prM3$fit[prM3$Type=="R"], lty=1, col="red")
 lines(prM3$Veg_dense[prM3$Type=="R"], prM3$lci[prM3$Type=="R"], lty=2, col ="red")
 lines(prM3$Veg_dense[prM3$Type=="R"], prM3$uci[prM3$Type=="R"], lty=2, col ="red")
-legend("topright", legend = "Veg. density * Position", cex = 1, bty ="n", text.width = 1)
-title(main = "(b)", outer = F, adj = 0, cex.main = 1, line = 0.2)
-legend("topright",legend =c("Culvert", "Road"), col = c("black", "red"), lty=2, lwd =1, cex = 1, bty ="n", text.width = 0.2)
+title(main = "(b) Veg. density * Position", outer = F, adj = 0, cex.main = 1, line = 0.5, font.main=1)
+par(xpd=NA)
+legend(x=1.5, y=1,legend =c("Culvert", "Road"), col = c("black", "red"), lty=2, lwd =1, cex = 1, bty ="n", text.width = 0.2)
+par(xpd=F) # just make note this model isn't very good - something else going on as well, good for low veg but not for high, we can see there is an effect at low vegetation densities but not at high, whereas the additive model displays that the effect of vegetation and position is separate, overall more animals observed at roads than culverts but also high occurrences at low densities , additive - effect of veg and position 
+
 
 
 
@@ -692,8 +692,8 @@ AICc(Mnull.3); AICc(M8)  # Only just better than null but not within 2 of the in
 
 
 ## Plots for thesis
-dev.new(width=15, height=15, dpi=80, pointsize=23, noRStudioGD = T)
-par(mfrow=c(2, 1), mgp=c(2.5,1,0), mar=c(4,4,3,3), cex = 1, las = 1)
+dev.new(width=13, height=5, dpi=80, pointsize=20, noRStudioGD = T)
+par(mfrow=c(1, 2), mgp=c(2.5,1,0), mar=c(4,4,2,2), oma=c(0,0,0,6), cex = 1, las = 1)
 
 plot(prM7b$Veg_dense[prM7b$Type=="C"], prM7b$fit[prM7b$Type=="C"], pch=20, ylim=c(min(prM7b$lci), max(prM7b$uci)), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type="l", las = 1)
 lines(prM7b$Veg_dense[prM7b$Type=="C"], prM7b$lci[prM7b$Type=="C"], lty=2)
@@ -701,9 +701,7 @@ lines(prM7b$Veg_dense[prM7b$Type=="C"], prM7b$uci[prM7b$Type=="C"], lty=2)
 lines(prM7b$Veg_dense[prM7b$Type=="R"], prM7b$fit[prM7b$Type=="R"], lty=1, col="red")
 lines(prM7b$Veg_dense[prM7b$Type=="R"], prM7b$lci[prM7b$Type=="R"], lty=2, col ="red")
 lines(prM7b$Veg_dense[prM7b$Type=="R"], prM7b$uci[prM7b$Type=="R"], lty=2, col ="red")
-legend("topright", legend = "Veg. density + Position", cex = 1, bty ="n", text.width = 1)
-title(main = "(a)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topright", legend =c("Culvert", "Road"), col = c("black", "red"), lty=2, lwd = 1, cex = 1, bty ="n", text.width = 0.2)
+title(main = "(a) Veg. density + Position", outer = F, adj = 0, cex.main = 1, line = 0.5, font.main = 1)
 
 
 plot(prM7$Veg_dense[prM7$Type=="C"], prM7$fit[prM7$Type=="C"], pch=20, ylim=c(min(prM7$lci), max(prM7$uci)), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type="l", las = 1)
@@ -712,9 +710,11 @@ lines(prM7$Veg_dense[prM7$Type=="C"], prM7$uci[prM7$Type=="C"], lty=2)
 lines(prM7$Veg_dense[prM7$Type=="R"], prM7$fit[prM7$Type=="R"], lty=1, col="red")
 lines(prM7$Veg_dense[prM7$Type=="R"], prM7$lci[prM7$Type=="R"], lty=2, col ="red")
 lines(prM7$Veg_dense[prM7$Type=="R"], prM7$uci[prM7$Type=="R"], lty=2, col ="red")
-legend("topleft", legend = "Veg. density * Position", cex = 1, bty ="n", text.width = 0.9)
-title(main = "(b)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("bottomleft", legend =c("Culvert", "Road"), col = c("black", "red"), lty=2, lwd = 1, cex = 1, bty ="n", text.width = 0.2)
+title(main = "(b) Veg. density * Position", outer = F, adj = 0, cex.main = 1, line = 0.5, font.main =1)
+
+par(xpd=NA)
+legend(x=1.5, y=1,legend =c("Culvert", "Road"), col = c("black", "red"), lty=c(2), lwd =1, cex = 1, bty ="n", text.width = 0.2)
+par(xpd=F)
 
 
 
