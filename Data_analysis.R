@@ -435,12 +435,10 @@ summary(rl) # Summarise the relationship between veg dense and length
 #install.packages("polycor")
 library(polycor)
 
-
+# Vegetation cover was no longer included as we prefferred to use the numerical version of vegetation measurements - vegetation density
 polyserial(dat2$Veg_dense, dat2$Nat_ref, std.err = T) # Check correlation of veg dense with nat ref
 #  -0.2213388, the correlation coefficient, p = 4.416e-05
 
-polyserial(dat2$Veg_dense, dat2$Veg_cov, std.err = T) # Check correlation of veg dense with veg cov
-# -0.08448043 correlation coefficient, p = 7.838e-06
 
 polyserial(dat2$Veg_dense, dat2$Rd_typ, std.err = T) # Check correlation of veg dense with rd type
 # -0.02763984, p = 0.0001269
@@ -448,10 +446,6 @@ polyserial(dat2$Veg_dense, dat2$Rd_typ, std.err = T) # Check correlation of veg 
 Nr <- lmer(Veg_dense ~ Nat_ref+ (1 |Site), data = dat2)
 summary(Nr) # Relationship of veg dense and nat ref, nat ref has less veg dense
 
-
-Vc <- lmer(Veg_dense ~ Veg_cov + (1 | Site), data = dat2)
-summary(Vc) # Relationship of veg dense with veg cov, increased veg dense = higher veg cov
-plot(dat2$Veg_cov, dat2$Veg_dense)
 
 Rt <- glmer(Native.pa ~ Rd_typ + (1 |Site), data = dat2, family = "binomial")
 summary(Rt) # Relationship of native species observations and rd type, negative influence as road width increased likely due to wider roads = greater barriers 
@@ -470,13 +464,8 @@ axis(side = 1, at = 1:2, labels = c("No", "Yes"))
 title(main = "(b)", outer = F, adj = 0, cex.main = 1, line = 0.3)
 legend("topright", legend = bquote('r'['pb']*'= -0.22'*', p = <0.001'), cex = 1, bty ="n", text.width = 1.4)
 
-
-plot(dat2$Veg_cov, dat2$Veg_dense, xlab = "Vegetation cover", ylab = "Vegetation density (m)", las = 1)
-title(main = "(c)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topright", legend = bquote('r'['pb']*'= -0.08, p = <0.001'), cex = 1, bty ="n")
-
 plot(dat2$Rd_typ, dat2$Veg_dense, xlab = "Road type", ylab = "Vegetation density (m)", las = 1)
-title(main = "(d)", outer = F, adj = 0, cex.main = 1, line = 0.3)
+title(main = "(c)", outer = F, adj = 0, cex.main = 1, line = 0.3)
 legend("topleft", legend = bquote('r'['pb']*'= -0.03, p = <0.001'), cex = 1, bty ="n", text.width =0.0001)
 
 
@@ -1141,9 +1130,6 @@ plot(beh.site$Rd_typ, beh.site$Clvt_ht) # Plot this
 Rt <- lm(Clvt_ht ~ Rd_typ, data = beh.site) 
 summary(Rt) # Relationship of culvert height with road type
 
-
-VC <- lm(VegC ~ Clvt_ht, data = beh.site)
-summary(VC) # relationship of culvert vegetation with culvert height
 
 
 
