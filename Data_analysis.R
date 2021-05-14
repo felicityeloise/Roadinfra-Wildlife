@@ -462,11 +462,11 @@ legend("topleft", legend = "r = 0.23, p = 0.001", cex = 1, bty ="n", text.width 
 plot(dat2$Nat_ref, dat2$Veg_dense, xaxt = "n", xlab = "Nature refuge", ylab = "Vegetation density (m)", las = 1)# Nature refuge areas had lower vegetation densities
 axis(side = 1, at = 1:2, labels = c("No", "Yes"))
 title(main = "(b)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topright", legend = bquote('r'['pb']*'= -0.22'*', p = <0.001'), cex = 1, bty ="n", text.width = 1.4)
+legend("topright", legend = bquote('r'['pb']*'= -0.22'*', p <0.001'), cex = 1, bty ="n", text.width = 1.4)
 
 plot(dat2$Rd_typ, dat2$Veg_dense, xlab = "Road type", ylab = "Vegetation density (m)", las = 1)
 title(main = "(c)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topleft", legend = bquote('r'['pb']*'= -0.03, p = <0.001'), cex = 1, bty ="n", text.width =0.0001)
+legend("topleft", legend = bquote('r'['pb']*'= -0.03, p <0.001'), cex = 1, bty ="n", text.width =0.0001)
 
 
 
@@ -1140,7 +1140,7 @@ par(mfrow=c(3, 3), mgp=c(2.5,1,0), mar=c(4,4,3,3))
 
 plot(beh.site$VegC, beh.site$Clvt_ht, xlab = "Vegetation density at culvert (m)", ylab = "Culvert height (m)", las = 1) 
 title(main = "(a)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topright", legend = "r = 0.04, p = 0.82", cex = 1, bty ="n", text.width = 0.4)
+legend("topright", legend = "r = 0.04, p = 0.82", cex = 1, bty ="n", text.width = 0.5)
 
 plot(beh.site$VegR, beh.site$Culvert_ht, xlab = "Vegetation density at road (m)", ylab = "Culvert height (m)", las = 1)
 title(main = "(b)", outer = F, adj = 0, cex.main = 1, line = 0.3)
@@ -1152,7 +1152,7 @@ legend("topleft", legend = "r = 0.30, p = 0.09", cex = 1, bty = "n", text.width 
 
 plot(beh.site$Openness, beh.site$Clvt_ht, xlab = "Culvert openness ratio", ylab = "Culvert height (m)", las = 1)
 title(main = "(d)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topleft", legend = "r = 0.85, p = <0.001", cex = 1, bty = "n", text.width = 0.37)
+legend("topleft", legend = "r = 0.85, p <0.001", cex = 1, bty = "n", text.width = 0.37)
 
 plot(beh.site$Clvt_sz, beh.site$Clvt_ht, xlab = "Culvert size", ylab = "Culvert height (m)", las = 1)
 title(main = "(e)", outer = F, adj = 0, cex.main = 1, line = 0.3)
@@ -1160,7 +1160,7 @@ legend("topleft", legend = bquote('r'['pb']*'= 0.79, p = 0.006'), cex = 1, bty =
 
 plot(beh.site$Clvt_wdt, beh.site$Clvt_ht, xlab = "Culvert width (m)", ylab = "Culvert height (m)", las = 1)
 title(main = "(f)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topright", legend = "r = 0.76, p = <0.001", cex = 1, bty = "n", text.width = )
+legend("topright", legend = "r = 0.76, p <0.001", cex = 1, bty = "n", text.width = )
 
 plot(beh.site$Length, beh.site$Clvt_ht, xlab = "Culvert Length (m)", ylab = "Culvert height (m)", las = 1)
 title(main = "(g)", outer = F, adj = 0, cex.main = 1, line = 0.3)
