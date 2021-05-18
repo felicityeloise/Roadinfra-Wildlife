@@ -68,12 +68,13 @@ levels(beh$Age)
 levels(beh$Sex)
 levels(beh$Img_num)
 
-
-
+str(rc)
 # Check the levels of each column of the site characteristics data
 levels(rc$Suburb)
 levels(rc$Road)
 levels(rc$Rd_typ)
+length(unique(rc$Nat_ref))
+rc$Nat_ref <- as.numeric(rc$Nat_ref)
 length(unique(rc$Site))
 levels(rc$Cam_typ)
 levels(rc$Clvt_sz)
@@ -333,13 +334,14 @@ head(dat2); dim(dat2) # Check that this has worked, all looks good.
 rc[is.na(rc)] <- 0 # Replace NA with 0
 head(rc) # Check that this worked
 
+
 # Averages of vegetation data per camera point
-rc$C1 <- rowMeans(rc[ , c(13, 14, 15)], na.rm = TRUE )
-rc$C2 <- rowMeans(rc[ , c(17, 18, 19)], na.rm = TRUE)
-rc$C3 <- rowMeans(rc[ , c(21, 22, 23)], na.rm = TRUE)
-rc$C4 <- rowMeans(rc[ , c(25, 26, 27)], na.rm = TRUE)
-rc$R1 <- rowMeans(rc[ , c(29, 30, 31)], na.rm = TRUE)
-rc$R2 <- rowMeans(rc[ , c(33, 34, 35)], na.rm = TRUE)
+rc$C1 <- rowMeans(rc[ , c(14, 15, 16)], na.rm = TRUE )
+rc$C2 <- rowMeans(rc[ , c(18, 19, 20)], na.rm = TRUE)
+rc$C3 <- rowMeans(rc[ , c(22, 23, 24)], na.rm = TRUE)
+rc$C4 <- rowMeans(rc[ , c(26, 27, 28)], na.rm = TRUE)
+rc$R1 <- rowMeans(rc[ , c(30, 31, 32)], na.rm = TRUE)
+rc$R2 <- rowMeans(rc[ , c(34, 35, 36)], na.rm = TRUE)
 head(rc) # Ensure that this has worked
 
 
@@ -380,24 +382,8 @@ dat2 <- merge(dat2, rc6, by = c("Site", "Cam_pt"), all.x = T , all.y = F) # Merg
 head(dat2); dim(dat2)
 
 
-rc7 <- rc[,c("Site", "Length")] # Create a new data frame with just the site and length of the culvert
+rc7 <- rc[,c("Site", "Length", "Nat_ref", "Clvt_ht")] # Create a new data frame with just the site, length, nat_ref, and Clvt_ht of the culvert
 dat2 <- merge(dat2, rc7, by = "Site", all.x = T, all.y = F) # Merge this with beh4 but create a new data set 
-
-
-
-write_xlsx(rc, "rc") # Create an excel file
-# Import back to R
-rc8 <- read.table("rc.txt", header = T, stringsAsFactors = T)
-rc8 # Check this has worked, all looks good
-# Want just site and Nat_Ref alone
-rc9 <- rc8[,c("Site", "Nat_ref")]
-rc9 # Check this has worked
-
-dat2 <- merge(dat2, rc9, by = "Site", all.x = T, all.y = F) # Merge this with data from dat2 
-head(dat2) # How does this look
-str(dat2) # Nat_ref isn't right
-dat2$Nat_ref <- factor(dat2$Nat_ref, levels = c("0", "1")) # Make the levels appear in the right order
-str(dat2$Nat_ref) # Check this worked
 table(dat2$Site, dat2$Nat_ref) # Check this worked
 
 # Models with type are better than those that exclude it - explore occurrence data to determine what factors influence species presence/absence
@@ -431,25 +417,28 @@ cor.test(dat2$Length, dat2$Veg_dense) # Correlated, more veg dense on wider rd, 
 rl <- lmer(Veg_dense ~ Length + (1 |Site), data = dat2)
 summary(rl) # Summarise the relationship between veg dense and length
 
-# Need another package for some of the other correlation tests
-#install.packages("polycor")
-library(polycor)
 
-# Vegetation cover was no longer included as we prefferred to use the numerical version of vegetation measurements - vegetation density
-polyserial(dat2$Veg_dense, dat2$Nat_ref, std.err = T) # Check correlation of veg dense with nat ref
-#  -0.2213388, the correlation coefficient, p = 4.416e-05
+# Vegetation cover was no longer included as we preferred to use the numerical version of vegetation measurements - vegetation density
+
+head(dat2)
+cor.test(ifelse(dat2$Rd_typ== "major",1,0), dat2$Veg_dense) # Check correlation of veg dense with rd type
+summary(lm(Veg_dense ~ Rd_typ, data = dat2)) # Relationship between veg dense and road type (not going to be included in the thesis as these are not the results we expect)
 
 
-polyserial(dat2$Veg_dense, dat2$Rd_typ, std.err = T) # Check correlation of veg dense with rd type
-# -0.02763984, p = 0.0001269
+summary(lm(Veg_dense ~ Length, data = dat2)) # Relationship between veg dense and road width 
 
-Nr <- lmer(Veg_dense ~ Nat_ref+ (1 |Site), data = dat2)
+cor.test(dat2$Nat_ref, dat2$Veg_dense) # -0.13, p = 0.07 (not significant)
+Nr <- lmer(Veg_dense ~ Nat_ref+ (1 |Site), data = dat2) # Check this one also and do for behavioural
 summary(Nr) # Relationship of veg dense and nat ref, nat ref has less veg dense
 
 
-Rt <- glmer(Native.pa ~ Rd_typ + (1 |Site), data = dat2, family = "binomial")
-summary(Rt) # Relationship of native species observations and rd type, negative influence as road width increased likely due to wider roads = greater barriers 
+Cs <- lmer(Veg_dense ~ Clvt_sz + (1 | Site), data = dat2) # Relationship of veg dense with culvert size
+summary(Cs) # Not sig.
+cor.test(ifelse(dat2$Clvt_sz == "large", 1,0), dat2$Veg_dense) # 0.04, p=0.62
 
+dat2$Nat_ref <- as.factor(dat2$Nat_ref) # For the purposes of plotting make this a factor variable
+str(dat2) # Check this has worked
+table(dat2$Site, dat2$Nat_ref) # Make sure this is right
 
 ## Create the plots for appendix
 dev.new(width=20, height=20, dpi=80, pointsize=28, noRStudioGD= T)
@@ -462,11 +451,11 @@ legend("topleft", legend = "r = 0.23, p = 0.001", cex = 1, bty ="n", text.width 
 plot(dat2$Nat_ref, dat2$Veg_dense, xaxt = "n", xlab = "Nature refuge", ylab = "Vegetation density (m)", las = 1)# Nature refuge areas had lower vegetation densities
 axis(side = 1, at = 1:2, labels = c("No", "Yes"))
 title(main = "(b)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topright", legend = bquote('r'['pb']*'= -0.22'*', p <0.001'), cex = 1, bty ="n", text.width = 1.4)
+legend("topright", legend = "r = -0.13, p = 0.08", cex = 1, bty ="n", text.width = 1.4)
 
-plot(dat2$Rd_typ, dat2$Veg_dense, xlab = "Road type", ylab = "Vegetation density (m)", las = 1)
+plot(dat2$Clvt_sz, dat2$Veg_dense, xlab = "Culvert size", ylab = "Vegetation density (m)", las = 1)
 title(main = "(c)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topleft", legend = bquote('r'['pb']*'= -0.03, p <0.001'), cex = 1, bty ="n", text.width =0.0001)
+legend("top", legend = "r = 0.03, p = 0.62", cex = 1, bty ="n", text.width =1)
 
 
 
@@ -583,7 +572,7 @@ lines(prM3$Veg_dense[prM3$Type=="R"], prM3$lci[prM3$Type=="R"], lty=2, col ="red
 lines(prM3$Veg_dense[prM3$Type=="R"], prM3$uci[prM3$Type=="R"], lty=2, col ="red")
 title(main = "(b) Veg. density * Position", outer = F, adj = 0, cex.main = 1, line = 0.5, font.main=1)
 par(xpd=NA)
-legend(x=1.5, y=1,legend =c("Culvert", "Road"), col = c("black", "red"), lty=2, lwd =1, cex = 1, bty ="n", text.width = 0.2)
+legend(x=1.5, y=1,legend =c("Culvert", "Road"), col = c("black", "red"), lty=1, lwd =1, cex = 1, bty ="n", text.width = 0.2)
 par(xpd=F) # just make note this model isn't very good - something else going on as well, good for low veg but not for high, we can see there is an effect at low vegetation densities but not at high, whereas the additive model displays that the effect of vegetation and position is separate, overall more animals observed at roads than culverts but also high occurrences at low densities , additive - effect of veg and position 
 
 
@@ -700,9 +689,8 @@ lines(prM7$Veg_dense[prM7$Type=="R"], prM7$fit[prM7$Type=="R"], lty=1, col="red"
 lines(prM7$Veg_dense[prM7$Type=="R"], prM7$lci[prM7$Type=="R"], lty=2, col ="red")
 lines(prM7$Veg_dense[prM7$Type=="R"], prM7$uci[prM7$Type=="R"], lty=2, col ="red")
 title(main = "(b) Veg. density * Position", outer = F, adj = 0, cex.main = 1, line = 0.5, font.main =1)
-
 par(xpd=NA)
-legend(x=1.5, y=1,legend =c("Culvert", "Road"), col = c("black", "red"), lty=c(2), lwd =1, cex = 1, bty ="n", text.width = 0.2)
+legend(x=1.5, y=1,legend =c("Culvert", "Road"), col = c("black", "red"), lty=1, lwd =1, cex = 1, bty ="n", text.width = 0.2)
 par(xpd=F)
 
 
@@ -877,12 +865,12 @@ rc[is.na(rc)] <- 0 # Replace NA with 0
 head(rc) # Check that this worked
 
 # Averages of vegetation data per camera point
-rc$C1 <- rowMeans(rc[ , c(13, 14, 15)], na.rm = TRUE )
-rc$C2 <- rowMeans(rc[ , c(17, 18, 19)], na.rm = TRUE)
-rc$C3 <- rowMeans(rc[ , c(21, 22, 23)], na.rm = TRUE)
-rc$C4 <- rowMeans(rc[ , c(25, 26, 27)], na.rm = TRUE)
-rc$R1 <- rowMeans(rc[ , c(29, 30, 31)], na.rm = TRUE)
-rc$R2 <- rowMeans(rc[ , c(33, 34, 35)], na.rm = TRUE)
+rc$C1 <- rowMeans(rc[ , c(14, 15, 16)], na.rm = TRUE )
+rc$C2 <- rowMeans(rc[ , c(18, 19, 20)], na.rm = TRUE)
+rc$C3 <- rowMeans(rc[ , c(22, 23, 24)], na.rm = TRUE)
+rc$C4 <- rowMeans(rc[ , c(26, 27, 28)], na.rm = TRUE)
+rc$R1 <- rowMeans(rc[ , c(30, 31, 32)], na.rm = TRUE)
+rc$R2 <- rowMeans(rc[ , c(34, 35, 36)], na.rm = TRUE)
 head(rc) # Ensure that this has worked
 
 # Create a new data frame with this data in it
@@ -956,20 +944,11 @@ AICc(mnull); AICc(m10); AICc(m12); AICc(m13) # The model that fits the data best
 
 
 
-rc7 <- rc[,c("Site", "Length", "Clvt_wdt", "Clvt_ht")] # Create a new data frame with just the site and length of the culvert
+rc7 <- rc[,c("Site", "Length", "Clvt_wdt", "Clvt_ht", "Nat_ref", "Clvt_wdt")] # Create a new data frame with culvert variables and nat ref
 beh5 <- merge(beh4, rc7, by = "Site", all.x = T, all.y = F) # Merge this with beh4 but create a new data set 
 
 # Would like to look at whether the presence of a nature refuge area influences the data, will go back into excel to add this. There was a small area that was classified as a nature refuge on Rosewood Laidley Road that was not within the HV boundary, all those locations encompassed by the HV boundary will be assigned as a nature refuge. 
 
-write_xlsx(rc, "rc") # Create an excel file
-# Import back to R
-rc8 <- read.table("rc.txt", header = T, stringsAsFactors = T)
-rc8 # Check this has worked, all looks good
-# Want just site and Nat_Ref alone
-rc9 <- rc8[,c("Site", "Nat_ref")]
-rc9 # Check this has worked
-
-beh5 <- merge(beh5, rc9, by = "Site", all.x = T, all.y = F) # Merge this with data from beh4 but create add it to the new beh5 dataset
 
 dir() # Get the directory so we can access functions that are saved in separate files
 source("Felicity_Functions.R") # Load the functions to this script 
@@ -1007,7 +986,7 @@ rc10Vegdif <- sort(rc10$Vegdif) # Reorder
 
 head(rc10); dim(rc10) # If it is a negative value then there is higher vegetation density at the road than at the culvert, if it is a positive value than there is a higher vegetation density at the culvert than the road.
 
-
+rc8 <- rc[,c("Site", "Rd_typ", "Cam_typ", "Clvt_sz", "Clvt_wdt", "Clvt_ht", "Length", "Construction", "Nat_ref")]
 beh.site <- rc8[, c("Site", "Rd_typ", "Cam_typ", "Clvt_sz", "Clvt_wdt", "Clvt_ht", "Length", "Construction", "Nat_ref")] # Create a site specific data set containing only the information needed to answer the hypotheses
 head(beh.site); dim(beh.site) # Check how this looks
 beh.site$Rd_typ <- factor(rc$Rd_typ, levels = c("minor", "major")) # Needed to be reordered
@@ -1116,19 +1095,13 @@ plot(beh.site$Clvt_wdt, beh.site$Clvt_ht) # Plot this
 cor.test(beh.site$Length, beh.site$Clvt_ht) # Correlation of culvert length with culvert height
 plot(beh.site$Length, beh.site$Clvt_ht) # Plot this
 
-polyserial(beh.site$Clvt_ht, beh.site$Clvt_sz, std.err = T)  # Correlation of culvert height with culvert size
+cor.test(ifelse(beh.site$Clvt_sz == "large", 1,0), beh.site$Clvt_ht) 
 plot(beh.site$Clvt_sz, beh.site$Clvt_ht)# Plot this
-str(beh.site$Clvt_sz) # What is the structure of culvert size?
 table(beh.site$Site, beh.site$Clvt_sz) # What sizes are the culverts depending on the sites, does this look right? Yes, no issues
 
-polyserial(beh.site$Clvt_ht, beh.site$Nat_ref, std.err = T) # Correlation of culvert height with nat ref
+cor.test(ifelse(beh.site$Nat_ref == "1", 1, 0), beh.site$Clvt_ht) # For plotting purposes in this case want to keep Nat_ref as a factor variable and just write the code so that we can test the correlation here
 plot(beh.site$Nat_ref, beh.site$Clvt_ht) # Plot this
 
-polyserial(beh.site$Clvt_ht, beh.site$Rd_typ, std.err = T) # Correlation of culvert height with road width
-plot(beh.site$Rd_typ, beh.site$Clvt_ht) # Plot this
-
-Rt <- lm(Clvt_ht ~ Rd_typ, data = beh.site) 
-summary(Rt) # Relationship of culvert height with road type
 
 
 
@@ -1156,7 +1129,7 @@ legend("topleft", legend = "r = 0.85, p <0.001", cex = 1, bty = "n", text.width 
 
 plot(beh.site$Clvt_sz, beh.site$Clvt_ht, xlab = "Culvert size", ylab = "Culvert height (m)", las = 1)
 title(main = "(e)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topleft", legend = bquote('r'['pb']*'= 0.79, p = 0.006'), cex = 1, bty = "n", text.width = 1)
+legend("topleft", legend = "r = 0.82, p <0.001", cex = 1, bty = "n", text.width = 1)
 
 plot(beh.site$Clvt_wdt, beh.site$Clvt_ht, xlab = "Culvert width (m)", ylab = "Culvert height (m)", las = 1)
 title(main = "(f)", outer = F, adj = 0, cex.main = 1, line = 0.3)
@@ -1169,11 +1142,8 @@ legend("topright", legend = "r = 0.17, p = 0.36", cex = 1, bty = "n", text.width
 plot(beh.site$Nat_ref, beh.site$Clvt_ht, xaxt = "n", xlab = "Nature refuge", ylab = "Culvert height (m)", las = 1)
 axis(side = 1, at = 1:2, labels = c("No", "Yes"))
 title(main = "(h)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topright", legend = bquote('r'['pb']*'= 0.16, p = 0.02'), cex = 1, bty ="n", text.width = 1.5)
+legend("topright", legend = "r = -0.03, p = 0.87", cex = 1, bty ="n", text.width = 1.5)
 
-plot(beh.site$Rd_typ, beh.site$Clvt_ht, xlab = "Road type", ylab = "Culvert height (m)", las = 1)
-title(main = "(i)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topleft", legend = bquote('r'['pb']*'=-0.04, p = 0.13'), cex = 1, bty= "n", text.width = 1)
 
 
 
