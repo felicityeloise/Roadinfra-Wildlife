@@ -68,12 +68,14 @@ levels(beh$Age)
 levels(beh$Sex)
 levels(beh$Img_num)
 
-
+str(rc)
 # Check the levels of each column of the site characteristics data
 levels(rc$Suburb)
 levels(rc$Road)
 levels(rc$Rd_typ)
 length(unique(rc$Nat_ref))
+rc$Nat_ref <- as.factor(rc$Nat_ref) # Make it a factor variable
+table(rc$Site, rc$Nat_ref) # Check this has worked correctly
 length(unique(rc$Site))
 levels(rc$Cam_typ)
 levels(rc$Clvt_sz)
@@ -383,7 +385,6 @@ head(dat2); dim(dat2)
 
 rc7 <- rc[,c("Site", "Length", "Nat_ref", "Clvt_ht")] # Create a new data frame with just the site, length, nat_ref, and Clvt_ht of the culvert
 dat2 <- merge(dat2, rc7, by = "Site", all.x = T, all.y = F) # Merge this with beh4 but create a new data set 
-table(dat2$Site, dat2$Nat_ref) # Check this worked
 
 # Models with type are better than those that exclude it - explore occurrence data to determine what factors influence species presence/absence
 head(dat2);dim(dat2) # Look at the first few rows of data
