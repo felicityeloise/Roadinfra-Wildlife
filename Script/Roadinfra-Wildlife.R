@@ -429,12 +429,14 @@ summary(lm(Veg_dense ~ Length, data = dat2)) # Relationship between veg dense an
 
 Nr <- lmer(Veg_dense ~ Nat_ref+ (1 |Site), data = dat2) # Check this one also and do for behavioural
 summary(Nr) # Relationship of veg dense and nat ref, nat ref has less veg dense
-cor.test(ifelse(dat2$Nat_ref == "1", 1,0), dat2$Veg_dense) # -0.13, p = 0.07 (not significant)
+cor.test(ifelse(dat2$Nat_ref == "1", 1,0), dat2$Veg_dense) # -0.19, p=0.009
 
 
 Cs <- lmer(Veg_dense ~ Clvt_sz + (1 | Site), data = dat2) # Relationship of veg dense with culvert size
 summary(Cs) # Not sig.
 cor.test(ifelse(dat2$Clvt_sz == "large", 1,0), dat2$Veg_dense) # 0.04, p=0.62
+
+cor.test(ifelse(dat2$Nat_ref == "1", 1,0), dat2$Length) # -0.72, p = < 0.001 (not significant)
 
 
 
@@ -449,12 +451,16 @@ legend("topleft", legend = "r = 0.23, p = 0.001", cex = 1, bty ="n", text.width 
 plot(dat2$Nat_ref, dat2$Veg_dense, xaxt = "n", xlab = "Nature refuge", ylab = "Vegetation density (m)", las = 1)# Nature refuge areas had lower vegetation densities
 axis(side = 1, at = 1:2, labels = c("No", "Yes"))
 title(main = "(b)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topright", legend = "r = -0.13, p = 0.08", cex = 1, bty ="n", text.width = 1.4)
+legend("topright", legend = "r = -0.20, p = 0.009", cex = 1, bty ="n", text.width = 1.4)
 
 plot(dat2$Clvt_sz, dat2$Veg_dense, xlab = "Culvert size", ylab = "Vegetation density (m)", las = 1)
 title(main = "(c)", outer = F, adj = 0, cex.main = 1, line = 0.3)
 legend("top", legend = "r = 0.03, p = 0.62", cex = 1, bty ="n", text.width =1)
 
+plot(dat2$Nat_ref, dat2$Length, xaxt = "n", xlab = "Nature refuge", ylab = "Road width (m)", las = 1)
+title(main = "(d)", outer = F, adj = 0, cex.main = 1, line = 0.3)
+axis(side = 1, at = 1:2, labels = c("No", "Yes"))
+legend("top", legend = "r = -0.72, p = <0.001", cex = 1, bty ="n", text.width =1)
 
 
 
@@ -1140,7 +1146,7 @@ legend("topright", legend = "r = 0.17, p = 0.36", cex = 1, bty = "n", text.width
 plot(beh.site$Nat_ref, beh.site$Clvt_ht, xaxt = "n", xlab = "Nature refuge", ylab = "Culvert height (m)", las = 1)
 axis(side = 1, at = 1:2, labels = c("No", "Yes"))
 title(main = "(h)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topright", legend = "r = -0.03, p = 0.87", cex = 1, bty ="n", text.width = 1.5)
+legend("topright", legend = "r = 0.08, p = 0.66", cex = 1, bty ="n", text.width = 1.5)
 
 
 
