@@ -1109,8 +1109,6 @@ plot(beh.site$Nat_ref, beh.site$Clvt_ht) # Plot this
 
 
 
-
-
 # Plots for appendix
 dev.new(width=20, height=20, dpi=80, pointsize=30, noRStudioGD = T)
 par(mfrow=c(3, 3), mgp=c(2.5,1,0), mar=c(4,4,3,3))
