@@ -3,7 +3,7 @@
 
 
 getwd()
-setwd("~/Desktop/GitHub/Use-of-road-infrastructure-by-Australian-wildlife/Roadinfra-Wildlife/Data")
+setwd("~/Desktop/Github_2/Roadinfra-Wildlife/Data")
 
 # Read in data
 dat <- read.table("Occurrence.txt", header = T, stringsAsFactors = T) # Read the occurrence data into R, ensuring that factor variables are assigned
@@ -465,7 +465,6 @@ legend("top", legend = "r = -0.72, p = <0.001", cex = 1, bty ="n", text.width =1
 
 
 
-
 # For exotic species p/a
 Mnull <- glmer(Exotic.pa ~ 1 + (1 | Site), family = "binomial", data = dat2)
 summary(Mnull) # Model if nothing is occurring
@@ -493,6 +492,9 @@ logLik(M1b)
 
 AICc(Mnull); AICc(M1); AICc(M1a); AICc(M1b); AICc(M2) # Null model is best, M3a is best model for veg dense which is quite similar to the type only model
 
+cand.set <- list(Mnull,M1,M1a, M1b, M2)
+
+aictab(cand.set)
 
 
 M2 <- glmer(Exotic.pa ~ Type + (1 | Site), family = "binomial", data = dat2)
