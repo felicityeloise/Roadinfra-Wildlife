@@ -719,8 +719,8 @@ AICc(Mnull.3); AICc(M8)  # Only just better than null but not within 2 of the in
 
 
 ## Plots for thesis
-dev.new(width=12, height=10, dpi=80, pointsize=20, noRStudioGD = T)
-par(mfrow=c(1, 1), mgp=c(2.5,1,0), mar=c(4,4,2,2), oma=c(0,0,0,6), cex = 1, las = 1)
+dev.new(width=20, height=10, dpi=50, pointsize=35, noRStudioGD = T)
+par(mfrow=c(1, 2), mgp=c(2.5,1,0), mar=c(4,4,2,2), oma=c(0,0,0,6), cex = 1, las = 1)
 
 plot(prM7b$Veg_dense[prM7b$Type=="C"], prM7b$fit[prM7b$Type=="C"], pch=20, ylim=c(min(prM7b$lci), max(prM7b$uci)), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type="l", las = 1)
 lines(prM7b$Veg_dense[prM7b$Type=="C"], prM7b$lci[prM7b$Type=="C"], lty=2)
@@ -728,6 +728,15 @@ lines(prM7b$Veg_dense[prM7b$Type=="C"], prM7b$uci[prM7b$Type=="C"], lty=2)
 lines(prM7b$Veg_dense[prM7b$Type=="R"], prM7b$fit[prM7b$Type=="R"], lty=1, col="red")
 lines(prM7b$Veg_dense[prM7b$Type=="R"], prM7b$lci[prM7b$Type=="R"], lty=2, col ="red")
 lines(prM7b$Veg_dense[prM7b$Type=="R"], prM7b$uci[prM7b$Type=="R"], lty=2, col ="red")
+title(main = "(a) All animals", outer = F, adj = 0, cex.main = 1, line = 0.3)
+
+plot(prM3b$Veg_dense[prM3b$Type=="C"], prM3b$fit[prM3b$Type=="C"], pch=20, ylim=c(min(prM3b$lci), max(prM3b$uci)), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type="l", las = 1)
+lines(prM3b$Veg_dense[prM3b$Type=="C"], prM3b$lci[prM3b$Type=="C"], lty=2)
+lines(prM3b$Veg_dense[prM3b$Type=="C"], prM3b$uci[prM3b$Type=="C"], lty=2)
+lines(prM3b$Veg_dense[prM3b$Type=="R"], prM3b$fit[prM3b$Type=="R"], lty=1, col="red")
+lines(prM3b$Veg_dense[prM3b$Type=="R"], prM3b$lci[prM3b$Type=="R"], lty=2, col ="red")
+lines(prM3b$Veg_dense[prM3b$Type=="R"], prM3b$uci[prM3b$Type=="R"], lty=2, col ="red")
+title(main = "(b) Native species", outer = F, adj = 0, cex.main = 1, line = 0.3)
 
 par(xpd=NA)
 legend(x=1.5, y=1,legend =c("Culvert", "Road"), col = c("black", "red"), lty=1, lwd =1, cex = 1, bty ="n", text.width = 0.2)
