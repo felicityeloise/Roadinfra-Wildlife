@@ -719,7 +719,7 @@ AICc(Mnull.3); AICc(M8)  # Only just better than null but not within 2 of the in
 
 
 ## Plots for thesis
-dev.new(width=20, height=10, dpi=50, pointsize=35, noRStudioGD = T)
+dev.new(width=25, height=10, dpi=50, pointsize=35, noRStudioGD = T)
 par(mfrow=c(1, 2), mgp=c(2.5,1,0), mar=c(4,4,2,2), oma=c(0,0,0,6), cex = 1, las = 1)
 
 plot(prM7b$Veg_dense[prM7b$Type=="C"], prM7b$fit[prM7b$Type=="C"], pch=20, ylim=c(min(prM7b$lci), max(prM7b$uci)), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type="l", las = 1)
