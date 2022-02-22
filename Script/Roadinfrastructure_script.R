@@ -70,9 +70,6 @@ str(rc)
 levels(rc$Suburb)
 levels(rc$Road)
 levels(rc$Rd_typ)
-length(unique(rc$Nat_ref))
-rc$Nat_ref <- as.factor(rc$Nat_ref) # Make it a factor variable
-table(rc$Site, rc$Nat_ref) # Check this has worked correctly
 length(unique(rc$Site))
 levels(rc$Cam_typ)
 levels(rc$Clvt_sz)
@@ -133,6 +130,7 @@ library(lattice)
 library(MASS)
 library(pscl)
 library(lmtest)
+library(mgcv)
 
 # Poisson GLM
 m1 <- glm(All_animals ~ Type, family = 'poisson', data = dat)
@@ -370,12 +368,12 @@ dat2 <- merge(dat2, rc6, by = c("Site", "Cam_pt"), all.x = T , all.y = F) # Merg
 head(dat2); dim(dat2)
 
 
-rc7 <- rc[,c("Site", "Length", "Nat_ref", "Clvt_ht")] # Create a new data frame with just the site, length, nat_ref, and Clvt_ht of the culvert
+rc7 <- rc[,c("Site", "Length", "Clvt_ht")] # Create a new data frame with just the site, length,and Clvt_ht of the culvert
 dat2 <- merge(dat2, rc7, by = "Site", all.x = T, all.y = F) # Merge this with beh4 but create a new data set 
 
 # Models with type are better than those that exclude it - explore occurrence data to determine what environmental variables influence species presence/absence
 head(dat2);dim(dat2) # Look at the first few rows of data
-
+citation("lme4")
 
 # Load packages
 library(lmerTest) 
@@ -414,16 +412,14 @@ summary(lm(Veg_dense ~ Rd_typ, data = dat2)) # Relationship between veg dense an
 
 summary(lm(Veg_dense ~ Length, data = dat2)) # Relationship between veg dense and road width 
 
-Nr <- lmer(Veg_dense ~ Nat_ref+ (1 |Site), data = dat2) # Check this one also and do for behavioural
-summary(Nr) # Relationship of veg dense and nat ref, nat ref has less veg dense
-cor.test(ifelse(dat2$Nat_ref == "1", 1,0), dat2$Veg_dense) # -0.19, p=0.009
+
 
 
 Cs <- lmer(Veg_dense ~ Clvt_sz + (1 | Site), data = dat2) # Relationship of veg dense with culvert size
 summary(Cs) # Not sig.
 cor.test(ifelse(dat2$Clvt_sz == "large", 1,0), dat2$Veg_dense) # 0.04, p=0.62
 
-cor.test(ifelse(dat2$Nat_ref == "1", 1,0), dat2$Length) # -0.72, p = < 0.001 (not significant)
+
 
 # Vegetation density is correlated with the other variables so will be used in their place. However, it is not correlated with culvert size, which we are also interested in determining the influence of culvert size on observing wildlife so models for this variable will also be produced. 
 
@@ -435,7 +431,7 @@ cor.test(ifelse(dat2$Clvt_sz == "large", 1,0), dat2$Length) # 0.024, p=0.747
 
 cor.test(ifelse(dat2$Clvt_sz == "large",1,0), ifelse(dat2$Rd_typ == "major", 1,0)) #-0.09, p=0.199
 
-cor.test(ifelse(dat2$Clvt_sz == "large", 1,0), ifelse(dat2$Nat_ref == "1", 1,0)) #0.076, p=0.311
+
 
 
 ## Create the plots for appendix to show correlations with culvert size
@@ -451,9 +447,6 @@ plot(dat2$Clvt_sz, dat2$Length, xlab = "Culvert size", ylab = "Road width/Culver
 title(main = "(b)", outer = F, adj = 0, cex.main = 1, line = 0.3)
 legend("topleft", legend = "r = 0.024, p = 0.74", cex = 1, bty = "n", text.width = 1)
 
-plot(dat2$Clvt_sz, dat2$Nat_ref, xlab = "Culvert size", ylab = "Nature refuge", las = 1)
-title(main = "(c)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topleft", legend = "r = 0.076, p = 0.31", cex = 1, bty = "n", text.width = 1)
 
 
 ## Create the plots for appendix to show correlations with Vegetation density
@@ -464,17 +457,14 @@ plot(dat2$Length, dat2$Veg_dense, xlab = "Road width/Culvert length (m)", ylab =
 title(main = "(a)", outer = F, adj = 0, cex.main = 1, line = 0.3)
 legend("topleft", legend = "r = 0.23, p = 0.001", cex = 1, bty ="n", text.width = 1)
 
-plot(dat2$Nat_ref, dat2$Veg_dense, xlab = "Nature refuge", ylab = "Vegetation density (m)", las = 1)# Nature refuge areas had lower vegetation densities
-title(main = "(b)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topright", legend = "r = -0.20, p = 0.009", cex = 1, bty ="n", text.width = 1.4)
 
 plot(dat2$Clvt_sz, dat2$Veg_dense, xlab = "Culvert size", ylab = "Vegetation density (m)", las = 1)
-title(main = "(c)", outer = F, adj = 0, cex.main = 1, line = 0.3)
+title(main = "(b)", outer = F, adj = 0, cex.main = 1, line = 0.3)
 legend("top", legend = "r = 0.03, 
 p = 0.62", cex = 1, bty ="n", text.width =1)
 
 plot(dat2$Clvt_sz, dat2$Length, xlab = "Culvert size", ylab = "Road width/Culvert length (m)", las = 1)
-title(main = "(d)", outer = F, adj = 0, cex.main = 1, line = 0.3)
+title(main = "(c)", outer = F, adj = 0, cex.main = 1, line = 0.3)
 legend("topleft", legend = "r = 0.02, p = 0.74", cex = 1, bty = "n", text.width = 1)
 
 
@@ -602,7 +592,7 @@ lines(prM4$Veg_dense[prM4$Type=="C"], prM4$uci[prM4$Type=="C"], lty=2)
 lines(prM4$Veg_dense[prM4$Type=="R"], prM4$fit[prM4$Type=="R"], lty=1, col="red")
 lines(prM4$Veg_dense[prM4$Type=="R"], prM4$lci[prM4$Type=="R"], lty=2, col ="red")
 lines(prM4$Veg_dense[prM4$Type=="R"], prM4$uci[prM4$Type=="R"], lty=2, col ="red")
-
+title(main = "(b) Native species", outer = F, adj = 0, cex.main = 1, line = 0.3)
 
 M4a <- glmer(Native.pa ~ Veg_dense + (1 | Site), family = "binomial", data = dat2)
 summary(M4a) # Model veg dense only
@@ -820,6 +810,22 @@ summary(M10) # Produce interactive model, Significant
 #What is the Log Likelihood of this model?
 logLik(M10)
 
+# Predict from this interactive model
+ndM10 <- data.frame(Type = as.factor(c(rep("C", 50), rep("R", 50))), Veg_dense = seq(min(dat2$Veg_dense), max(dat2$Veg_dense), length.out = 50))
+prM10 <- predictSE(mod = M10, newdata = ndM10, se.fit = T, type = "response")
+prM10 <- data.frame(ndM10, fit = round(prM10$fit, 4), se = round(prM10$se.fit, 4))
+prM10$lci <- prM10$fit - (prM10$se * 1.96)
+prM10$uci <- prM10$fit + (prM10$se * 1.96)
+
+# Plot predictions from interactive model
+plot(prM10$Veg_dense[prM10$Type=="C"], prM10$fit[prM10$Type=="C"], pch=20, ylim=c(min(prM10$lci), max(prM10$uci)), xlab = "Veg. density", ylab = "Prob. of occurrence", type="l")
+lines(prM10$Veg_dense[prM10$Type=="C"], prM10$lci[prM10$Type=="C"], lty=2)
+lines(prM10$Veg_dense[prM10$Type=="C"], prM10$uci[prM10$Type=="C"], lty=2)
+lines(prM10$Veg_dense[prM10$Type=="R"], prM10$fit[prM10$Type=="R"], lty=1, col="red")
+lines(prM10$Veg_dense[prM10$Type=="R"], prM10$lci[prM10$Type=="R"], lty=2, col ="red")
+lines(prM10$Veg_dense[prM10$Type=="R"], prM10$uci[prM10$Type=="R"], lty=2, col ="red")
+
+
 M10a <- glmer(All_animals.pa ~ Veg_dense + (1|Site), family = "binomial", data = dat2)
 summary(M10a) # Produce veg dense only model
 #What is the Log Likelihood of this model?
@@ -851,21 +857,7 @@ AICc(Mnull.3); AICc(M10); AICc(M10a); AICc(M10b); AICc(M11) # M10b is best then 
 # Lower vegetation densities at culvert and road locations had a positive influence on the probability of observing an animal, whereas increasing vegetation densities had a negative influence on the probability of observing an animal. 
 anova(Mnull.3, M10) # Significant
 
-# Predict from the interactive model
-ndM10 <- data.frame(Type = as.factor(c(rep("C", 50), rep("R", 50))), Veg_dense = seq(min(dat2$Veg_dense), max(dat2$Veg_dense), length.out = 50))
-prM10 <- predictSE(mod = M10, newdata = ndM10, se.fit = T, type = "response")
-prM10 <- data.frame(ndM10, fit = round(prM10$fit, 4), se = round(prM10$se.fit, 4))
-prM10$lci <- prM10$fit - (prM10$se * 1.96)
-prM10$uci <- prM10$fit + (prM10$se * 1.96)
-head(prM10)
 
-# Plot predictions from the interactive model
-plot(prM10$Veg_dense[prM10$Type=="C"], prM10$fit[prM10$Type=="C"], pch=20, ylim=c(min(prM10$lci), max(prM10$uci)), xlab = "Veg. density", ylab = "Prob. of occurrence", type="l")
-lines(prM10$Veg_dense[prM10$Type=="C"], prM10$lci[prM10$Type=="C"], lty=2)
-lines(prM10$Veg_dense[prM10$Type=="C"], prM10$uci[prM10$Type=="C"], lty=2)
-lines(prM10$Veg_dense[prM10$Type=="R"], prM10$fit[prM10$Type=="R"], lty=1, col="red")
-lines(prM10$Veg_dense[prM10$Type=="R"], prM10$lci[prM10$Type=="R"], lty=2, col ="red")
-lines(prM10$Veg_dense[prM10$Type=="R"], prM10$uci[prM10$Type=="R"], lty=2, col ="red")
 
 
 M11 <- glmer(All_animals.pa ~ Type + (1|Site), family = "binomial", data = dat2)
@@ -975,9 +967,10 @@ prM15a$lci <- prM15a$fit - (prM15a$se * 1.96)
 prM15a$uci <- prM15a$fit + (prM15a$se * 1.96)
 
 # Plot predictions from this model
-plot(prM15a$Clvt_sz, prM15a$fit, pch=20, ylim=c(min(prM15a$lci), max(prM15a$uci)), xlab = "Culvert size", ylab = "Prob. of occurrence", type = "b")
-points(prM15a$Clvt_sz, prM15a$lci, lty=2)
-points(prM15a$Clvt_sz, prM15a$uci, lty=2)
+plot(c(1,2), prM15a$fit[c(1,3)], pch = 20, ylim=c(0,1), xlim=c(0.5,2.5), xlab = "Culvert size", ylab = "Probability of occurrence", type = "p", xaxt="n")
+axis(side=1, at=c(1,2), labels=c("small","large"))
+arrows(c(1,2), prM15a$lci[c(1,3)], c(1,2), prM15a$uci[c(1,3)], length = 0.05, code=3, angle=90)
+title(main = "(d) Large species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
 
 
 
@@ -1020,7 +1013,7 @@ lines(prM16$Veg_dense[prM16$Type=="C"], prM16$uci[prM16$Type=="C"], lty=2)
 lines(prM16$Veg_dense[prM16$Type=="R"], prM16$fit[prM16$Type=="R"], lty=1, col="red")
 lines(prM16$Veg_dense[prM16$Type=="R"], prM16$lci[prM16$Type=="R"], lty=2, col="red")
 lines(prM16$Veg_dense[prM16$Type=="R"], prM16$uci[prM16$Type=="R"], lty=2, col="red")
-title(main = "Position * Veg. dense", outer = F, adj = 0, cex.main = 1, line = 0.3)
+title(main = "Small species", outer = F, adj = 0, cex.main = 1, line = 0.3)
 
 
 M16a <- glmer(Small.pa ~ Veg_dense + (1|Site), family = "binomial", data = dat2)
@@ -1033,7 +1026,7 @@ summary(M16b) # Produce additive model, significant
 #What is the Log Likelihood of this model?
 logLik(M16b)
 
-# Predict from the interactive model
+# Predict from the additive model
 ndM16b <- data.frame(Type = as.factor(c(rep("C", 50), rep("R", 50))), Veg_dense = seq(min(dat2$Veg_dense), max(dat2$Veg_dense), length.out = 50))
 prM16b <- predictSE(mod = M16b, newdata = ndM16b, se.fit = T, type = "response")
 prM16b <- data.frame(ndM16b, fit = round(prM16b$fit, 4), se = round(prM16b$se.fit, 4))
@@ -1056,6 +1049,18 @@ summary(M17) # Produce the type only model, Significant
 # Culverts negatively influence the probability of observing an small animal and road locations positively influence the probability of observing an small animal. 
 #What is the Log Likelihood of this model?
 logLik(M17)
+
+ndM17 <- data.frame(Type = as.factor(c(rep("C", 2), rep("R", 2))))
+prM17 <- predictSE(mod = M17, newdata = ndM17, se.fit = T, type = "response")
+prM17 <- data.frame(ndM17, fit = round(prM17$fit, 4), se = round(prM17$se.fit, 4))
+prM17$lci <- prM17$fit - (prM17$se * 1.96)
+prM17$uci <- prM17$fit + (prM17$se * 1.96)
+
+# Plot predictions from this model
+plot(c(1,2), prM17$fit[c(1,3)], pch = 20, ylim=c(0,1), xlim=c(0.5,2.5), xlab = "Camera position", ylab = "Probability of occurrence", type = "p", xaxt="n")
+axis(side=1, at=c(1,2), labels=c("culvert","road"))
+arrows(c(1,2), prM17$lci[c(1,3)], c(1,2), prM17$uci[c(1,3)], length = 0.05, code=3, angle=90)
+title(main = "(c) Small species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
 
 anova(Mnull.5, M17) # Significant
 AICc(Mnull.5); AICc(M17)  # Model 17 is better than the null model
@@ -1101,6 +1106,10 @@ cand.set <- list(Mnull.5,M16,M16a, M16b, M17, M18, M18a, M18b)
 
 aictab(cand.set)
 
+
+
+
+
 ## Plots for paper - ensure that the y limit is set as 0,1. As these graphs are the probability of occurrence and probabilities are bounded between 0 and 1, we want this to be consistent and not have different y minimums and maximums
 
 
@@ -1124,15 +1133,10 @@ lines(prM4b$Veg_dense[prM4b$Type=="R"], prM4b$lci[prM4b$Type=="R"], lty = 2, col
 lines(prM4b$Veg_dense[prM4b$Type=="R"], prM4b$uci[prM4b$Type=="R"], lty = 2, col = "red")
 title(main = "(b) Native species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
 
-
-plot(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$fit[prM16b$Type=="C"], pch = 20, ylim=c(0, 1), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type = "l", las = 1)
-lines(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$lci[prM16b$Type=="C"], lty = 2)
-lines(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$uci[prM16b$Type=="C"], lty = 2)
-lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$fit[prM16b$Type=="R"], lty = 1, col = "red")
-lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$lci[prM16b$Type=="R"], lty = 2, col = "red")
-lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$uci[prM16b$Type=="R"], lty = 2, col = "red")
-title(main = "(c) Small species", outer = F, adj =0, cex.main = 1, line = 0.3, font.main = 1)
-
+plot(c(1,2), prM17$fit[c(1,3)], pch = 20, ylim=c(0,1), xlim=c(0.5,2.5), xlab = "Camera position", ylab = "Probability of occurrence", type = "p", xaxt="n", col = c("red", "black"))
+axis(side=1, at=c(1,2), labels=c("culvert","road"))
+arrows(c(1,2), prM17$lci[c(1,3)], c(1,2), prM17$uci[c(1,3)], length = 0.05, code=3, angle=90, col = c("red", "black"))
+title(main = "(c) Small species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
 
 plot(c(1,2), prM15a$fit[c(1,3)], pch = 20, ylim=c(0,1), xlim=c(0.5,2.5), xlab = "Culvert size", ylab = "Probability of occurrence", type = "p", xaxt="n")
 axis(side=1, at=c(1,2), labels=c("small","large"))
@@ -1145,7 +1149,57 @@ par(xpd=F)
 
 
 
-# Plots for publishing - no interactive models as the interaction was non-significant and the additive model actually explains the data better. 
+# Plots for supplementary material - interactive models that were better than the null model and within AICc2 of the additive model. 
+dev.new(width=12, height=10, dpi=80, pointsize=18, noRStudioGD = T)
+par(mfrow=c(2,2), mgp=c(2.5,1,0), mar=c(4,4,2,2), oma=c(0,0,0,6), cex = 1, las =1)
+
+
+plot(prM10$Veg_dense[prM10$Type=="C"], prM10$fit[prM10$Type=="C"], pch=20, ylim=c(0, 1), xlab = "Vegetation density", ylab = "Probability of occurrence", type="l")
+lines(prM10$Veg_dense[prM10$Type=="C"], prM10$lci[prM10$Type=="C"], lty=2)
+lines(prM10$Veg_dense[prM10$Type=="C"], prM10$uci[prM10$Type=="C"], lty=2)
+lines(prM10$Veg_dense[prM10$Type=="R"], prM10$fit[prM10$Type=="R"], lty=1, col="red")
+lines(prM10$Veg_dense[prM10$Type=="R"], prM10$lci[prM10$Type=="R"], lty=2, col ="red")
+lines(prM10$Veg_dense[prM10$Type=="R"], prM10$uci[prM10$Type=="R"], lty=2, col ="red")
+title(main = "(a) All animals", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
+
+
+plot(prM4$Veg_dense[prM4$Type=="C"], prM4$fit[prM4$Type=="C"], pch=20, ylim=c(0, 1), xlab = "Vegetation density", ylab = "Probability of occurrence", type="l")
+lines(prM4$Veg_dense[prM4$Type=="C"], prM4$lci[prM4$Type=="C"], lty=2)
+lines(prM4$Veg_dense[prM4$Type=="C"], prM4$uci[prM4$Type=="C"], lty=2)
+lines(prM4$Veg_dense[prM4$Type=="R"], prM4$fit[prM4$Type=="R"], lty=1, col="red")
+lines(prM4$Veg_dense[prM4$Type=="R"], prM4$lci[prM4$Type=="R"], lty=2, col ="red")
+lines(prM4$Veg_dense[prM4$Type=="R"], prM4$uci[prM4$Type=="R"], lty=2, col ="red")
+title(main = "(b) Native species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
+
+
+plot(prM16$Veg_dense[prM16$Type=="C"], prM16$fit[prM16$Type=="C"], pch=20, ylim=c(0, 1), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type = "l", las = 1)
+lines(prM16$Veg_dense[prM16$Type=="C"], prM16$lci[prM16$Type=="C"], lty=2)
+lines(prM16$Veg_dense[prM16$Type=="C"], prM16$uci[prM16$Type=="C"], lty=2)
+lines(prM16$Veg_dense[prM16$Type=="R"], prM16$fit[prM16$Type=="R"], lty=1, col="red")
+lines(prM16$Veg_dense[prM16$Type=="R"], prM16$lci[prM16$Type=="R"], lty=2, col="red")
+lines(prM16$Veg_dense[prM16$Type=="R"], prM16$uci[prM16$Type=="R"], lty=2, col="red")
+title(main = "(c) Small species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
+
+
+par(xpd=NA)
+legend(x=3.6, y=1, legend=c("Culvert", "Road"), col=c("black", "red"), lty=1, lwd=0.5, cex=1, bty="n", text.width=0.2)
+par(xpd=F)
+
+
+plot(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$fit[prM16b$Type=="C"], pch = 20, ylim=c(0, 1), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type = "l", las = 1)
+lines(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$lci[prM16b$Type=="C"], lty = 2)
+lines(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$uci[prM16b$Type=="C"], lty = 2)
+lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$fit[prM16b$Type=="R"], lty = 1, col = "red")
+lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$lci[prM16b$Type=="R"], lty = 2, col = "red")
+lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$uci[prM16b$Type=="R"], lty = 2, col = "red")
+title(main = "(d) Small species", outer = F, adj =0, cex.main = 1, line = 0.3, font.main = 1)
+
+
+
+
+
+
+
 
 
 
@@ -1400,10 +1454,9 @@ AICc(mnull); AICc(m10); AICc(m12); AICc(m13) # The model that fits the data best
 
 
 
-rc7 <- rc[,c("Site", "Length", "Clvt_wdt", "Clvt_ht", "Nat_ref", "Clvt_wdt")] # Create a new data frame with culvert variables and nat ref
+rc7 <- rc[,c("Site", "Length", "Clvt_wdt", "Clvt_ht", "Clvt_wdt")] # Create a new data frame with culvert variables
 beh5 <- merge(beh4, rc7, by = "Site", all.x = T, all.y = F) # Merge this with beh4 but create a new data set 
 
-# Would like to look at whether the presence of a nature refuge area influences the data, will go back into excel to add this. There was a small area that was classified as a nature refuge on Rosewood Laidley Road that was not within the HV boundary, all those locations encompassed by the HV boundary will be assigned as a nature refuge. 
 
 
 dir() # Get the directory so we can access functions that are saved in separate files
@@ -1442,8 +1495,8 @@ rc10Vegdif <- sort(rc10$Vegdif) # Reorder
 
 head(rc10); dim(rc10) # If it is a negative value then there is higher vegetation density at the road than at the culvert, if it is a positive value than there is a higher vegetation density at the culvert than the road.
 
-rc8 <- rc[,c("Site", "Rd_typ", "Cam_typ", "Clvt_sz", "Clvt_wdt", "Clvt_ht", "Length", "Construction", "Nat_ref")]
-beh.site <- rc8[, c("Site", "Rd_typ", "Cam_typ", "Clvt_sz", "Clvt_wdt", "Clvt_ht", "Length", "Construction", "Nat_ref")] # Create a site specific data set containing only the information needed to answer the hypotheses
+rc8 <- rc[,c("Site", "Rd_typ", "Cam_typ", "Clvt_sz", "Clvt_wdt", "Clvt_ht", "Length", "Construction")]
+beh.site <- rc8[, c("Site", "Rd_typ", "Cam_typ", "Clvt_sz", "Clvt_wdt", "Clvt_ht", "Length", "Construction")] # Create a site specific data set containing only the information needed to answer the hypotheses
 head(beh.site); dim(beh.site) # Check how this looks
 beh.site$Rd_typ <- factor(rc$Rd_typ, levels = c("minor", "major")) # Needed to be reordered
 str(beh.site$Rd_typ) # Make sure this looks right
@@ -1453,9 +1506,6 @@ beh.site$RC[which(beh.site$Site %in% unique(beh5$Site))] <- 1 # If there was a r
 head(beh.site); dim(beh.site) # Check how this looks
 beh.site <- merge(beh.site, rc10, by = "Site", all.x=T, all.y=F) # Merge the two data sets
 head(beh.site); dim(beh.site) # Check how this looks
-beh.site$Nat_ref <- factor(beh.site$Nat_ref, levels = c("0", "1")) # Make sure that this has been written correctly
-str(beh.site$Nat_ref) # Check this has worked
-table(beh.site$Site, beh.site$Clvt_sz) # Double check the right sites are nat refs
 
 # Look at the openness ratio as a way to also look at the culvert size instead
 head(beh.site) # look at the head of the data
@@ -1592,8 +1642,7 @@ cor.test(ifelse(beh.site$Clvt_sz == "large", 1,0), beh.site$Clvt_ht)
 plot(beh.site$Clvt_sz, beh.site$Clvt_ht)# Plot this
 table(beh.site$Site, beh.site$Clvt_sz) # What sizes are the culverts depending on the sites, does this look right? Yes, no issues
 
-cor.test(ifelse(beh.site$Nat_ref == "1", 1, 0), ifelse(beh.site$Clvt_sz == "large", 1,0)) # For plotting purposes in this case want to keep Nat_ref as a factor variable and just write the code so that we can test the correlation here
-plot(beh.site$Clvt_sz, beh.site$Nat_ref) # Plot this
+
 
 
 
@@ -1610,7 +1659,7 @@ plot(beh.site$Clvt_sz, beh.site$VegR, xlab = "Culvert size", ylab = "Vegetation 
 title(main = "(b)", outer = F, adj = 0, cex.main = 1, line = 0.3)
 legend("topleft", legend = "r = 0.08, p = 0.68", cex = 1, bty = "n", text.width = 0.4)
 
-plot(beh.site$Clvt_sz, beh.site$Vegdif, xlab = "Culvert size", ylab = "Vegetation density difference (m)", las = 1)
+plot(beh.site$Clvt_sz, beh.site$Vegdif, xlab = "Culvert size", ylab = "Vegetation difference (m)", las = 1)
 title(main = "(c)", outer = F, adj = 0, cex.main = 1, line = 0.3)
 legend("topleft", legend = "r = 0.30, p = 0.09", cex = 1, bty = "n", text.width = 0.52)
 
@@ -1628,57 +1677,68 @@ legend("topright", legend = "r = 0.76, p <0.001", cex = 1, bty = "n", text.width
 
 plot(beh.site$Clvt_sz, beh.site$Length, xlab = "Culvert size", ylab = "Culvert Length (m)", las = 1)
 title(main = "(g)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topright", legend = "r = 0.17, p = 0.36", cex = 1, bty = "n", text.width = 5)
+legend("topleft", legend = "r = 0.17, p = 0.36", cex = 1, bty = "n", text.width = 5)
 
 
 
-# How does culvert height influence the proportion of crossings under the culvert
+# How does culvert size influence the proportion of crossings under the culvert
+# To analyse this, as these are proportions we will be undertaking beta regressions instead of the generalized linear models used above. 
+
+?mgcv
+gam(Prop_RC_clvt ~ 1 , family=betar(link="logit"), data = beh.site) 
+
+gam(Prop_RC_clvt ~ Clvt_sz , family=betar(link="logit"), data = beh.site) 
+
+head(beh.site)
+
+
 # All animals
-m_null.2 <- glm(Prop_RC_clvt ~ 1 + 1, family = "binomial", data = beh.site) 
+m_null.2 <- gam(Prop_RC_clvt ~ 1 + 1, family=betar(link="logit"), data = beh.site) 
 summary(m_null.2) # Null model
 
-m5 <- glm(Prop_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = "binomial")
-summary(m5) # Not sig.
+
+m5 <- gam(Prop_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
+summary(m5) # Significant
 AICc(m_null.2); AICc(m5)
 
 
-m_null.3 <- glm(Prop_Kang_RC_clvt ~ 1 + 1, family = "binomial", data = beh.site)
+m_null.3 <- gam(Prop_Kang_RC_clvt ~ 1 + 1, family = betar(link="logit"), data = beh.site)
 summary(m_null.3) # Null model
 
-m6 <- glm(Prop_Kang_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = "binomial")
+m6 <- gam(Prop_Kang_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m6) # Not sig.
-AICc(m_null.3); AICc(m6)
+AICc(m_null.3); AICc(m6) #m6 is better than the null
 
 
-m_null.4 <- glm(Prop_Exotic_RC_clvt ~ 1 + 1, family = "binomial", data = beh.site)
+m_null.4 <- gam(Prop_Exotic_RC_clvt ~ 1 + 1, family = betar(link="logit"), data = beh.site)
 summary(m_null.4) # Null model
 
-m7 <- glm(Prop_Exotic_RC_clvt ~ Clvt_ht, data = beh.site[which(beh.site$RC == 1),], family = "binomial")
+m7 <- gam(Prop_Exotic_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m7)# Not sig.
 AICc(m_null.4); AICc(m7)
 
 
-m_null.5 <- glm(Prop_Native_RC_clvt ~ 1 + 1, family = "binomial", data = beh.site)
+m_null.5 <- gam(Prop_Native_RC_clvt ~ 1 + 1, family = betar(link="logit"), data = beh.site)
 summary(m_null.5) # Null model
 
-m8 <- glm(Prop_Native_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = "binomial")
+m8 <- gam(Prop_Native_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m8)# Not sig.
 AICc(m_null.5); AICc(m8)
 
 
-m_null.6 <- glm(Prop_Small_RC_clvt ~ 1 + 1, family = "binomial", data = beh.site)
+m_null.6 <- gam(Prop_Small_RC_clvt ~ 1 + 1, family = betar(link="logit"), data = beh.site)
 summary(m_null.6) # Null model
 
-m9 <- glm(Prop_Small_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = "binomial")
+m9 <- gam(Prop_Small_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m9)# Not sig.
 AICc(m_null.6); AICc(m9)
 
 
-m_null.7 <- glm(Prop_Large_RC_clvt ~ 1 + 1, family = "binomial", data = beh.site)
+m_null.7 <- gam(Prop_Large_RC_clvt ~ 1 + 1, family = betar(link="logit"), data = beh.site)
 summary(m_null.7) # Null model
 
-m10 <- glm(Prop_Large_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = "binomial")
-summary(m43)# Not sig.
+m10 <- gam(Prop_Large_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
+summary(m10)# Significant influence of large culverts on large species crossings
 AICc(m_null.7); AICc(m10)
 
 
@@ -1732,8 +1792,7 @@ plot(beh.site$Vegdif, beh.site$Length) # Plot this
 cor.test(beh.site$Clvt_ht, beh.site$Vegdif) # Correlation of culvert height with veg dif
 plot(beh.site$Vegdif, beh.site$Clvt_ht)# Plot this
 
-cor.test(ifelse(beh.site$Nat_ref == "1", 1, 0), beh.site$Vegdif) # For plotting purposes in this case want to keep Nat_ref as a factor variable and just write the code so that we can test the correlation here
-plot(beh.site$Vegdif, beh.site$Nat_ref) # Plot this
+
 
 
 
@@ -1750,7 +1809,7 @@ plot(beh.site$Vegdif, beh.site$VegR, xlab = "Vegetation density difference (m)",
 title(main = "(b)", outer = F, adj = 0, cex.main = 1, line = 0.3)
 legend("topleft", legend = "r = 0.08, p = 0.64", cex = 1, bty = "n", text.width = 0.4)
 
-plot(beh.site$Clvt_sz, beh.site$Vegdif, xlab = "Culvert size", ylab = "Vegetation density difference (m)", las = 1)
+plot(beh.site$Clvt_sz, beh.site$Vegdif, xlab = "Culvert size", ylab = "Vegetation difference (m)", las = 1)
 title(main = "(c)", outer = F, adj = 0, cex.main = 1, line = 0.3)
 legend("topleft", legend = "r = 0.15, p = 0.40", cex = 1, bty = "n", text.width = 0.52)
 
@@ -1773,89 +1832,96 @@ legend("topleft", legend = "r = 0.05, p = 0.78", cex = 1, bty = "n", text.width 
 
 
 # Models
-m11 <- glm(Prop_RC_clvt ~ Vegdif, data = beh.site[which(beh.site$RC == 1),], family = "binomial")
+m11 <- gam(Prop_RC_clvt ~ Vegdif, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m11) # Not sig.
 AICc(m_null.2); AICc(m11)
 
 
-m12 <- glm(Prop_Kang_RC_clvt ~ Vegdif, data = beh.site[which(beh.site$RC == 1),], family = "binomial")
+m12 <- gam(Prop_Kang_RC_clvt ~ Vegdif, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m12) # Not sig.
 AICc(m_null.3); AICc(m12)
 
 
-m13 <- glm(Prop_Exotic_RC_clvt ~ Vegdif, data = beh.site[which(beh.site$RC == 1),], family = "binomial")
+m13 <- gam(Prop_Exotic_RC_clvt ~ Vegdif, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m13)# Not sig.
 AICc(m_null.4); AICc(m13)
 
 
-m14 <- glm(Prop_Native_RC_clvt ~ Vegdif, data = beh.site[which(beh.site$RC == 1),], family = "binomial")
+m14 <- gam(Prop_Native_RC_clvt ~ Vegdif, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m14)# Not sig.
 AICc(m_null.5); AICc(m14)
 
 
-m15 <- glm(Prop_Small_RC_clvt ~ Vegdif, data = beh.site[which(beh.site$RC == 1),], family = "binomial")
+m15 <- gam(Prop_Small_RC_clvt ~ Vegdif, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m15)# Not sig.
 AICc(m_null.6); AICc(m15)
 
 
-m16 <- glm(Prop_Large_RC_clvt ~ Vegdif, data = beh.site[which(beh.site$RC == 1),], family = "binomial")
+m16 <- gam(Prop_Large_RC_clvt ~ Vegdif, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m16)# Not sig.
 AICc(m_null.7); AICc(m16)
 
 
 # Model selection framework information
 #All animals
-cand.set <- list(m_null.2, m5, m11)
+AICc(m_null.2); AICc(m5); AICc(m11) # m11 is best
+logLik.gam(m11)
+logLik.gam(m5)
+logLik.gam(m_null.2)
 
-aictab(cand.set)
 
 # Exotic species
-cand.set <- list(m_null.4, m7, m13)
-
-aictab(cand.set)
+AICc(m_null.4); AICc(m7); AICc(m13)
+logLik.gam(m13)
+logLik.gam(m7)
+logLik.gam(m_null.4)
 
 # Native species
-cand.set <- list(m_null.5, m8, m14)
+AICc(m_null.5); AICc(m8); AICc(m14)
+logLik.gam(m14)
+logLik.gam(m8)
+logLik.gam(m_null.5)
 
-aictab(cand.set)
 
 # Kangaroos
-cand.set <- list(m_null.3, m6, m12)
-
-aictab(cand.set)
+AICc(m_null.3); AICc(m6); AICc(m12)
+logLik.gam(m6)
+logLik.gam(m12)
+logLik.gam(m_null.3)
 
 # Small species
-cand.set <- list(m_null.6, m9, m15)
+AICc(m_null.6); AICc(m9); AICc(m15)
+logLik.gam(m15)
+logLik.gam(m9)
+logLik.gam(m15)
 
-aictab(cand.set)
 
 # Large species
-cand.set <- list(m_null.7, m10, m16)
-
-aictab(cand.set)
-
-
+AICc(m_null.7); AICc(m10); AICc(m16)
+logLik.gam(m16)
+logLik.gam(m10)
+logLik.gam(m_null.7)
 
 # Plot these models
 dev.new(width=10, height=12, dpi=80, pointsize=20, noRStudioGD = T)
 par(mfrow=c(3, 2), mgp=c(2.5,1,0), mar=c(4,4,3,3))
 
-plot(beh.site$Vegdif, beh.site$Prop_RC_clvt, pch=20, cex=1.5, las=1, xlab="Vegetation density difference (m)", ylab="Prop. crossing through culvert")
+plot(beh.site$Vegdif, beh.site$Prop_RC_clvt, pch=20, cex=1.5, las=1, xlab="Vegetation difference (m)", ylab="Prop. crossing through culvert")
 title(main = "(a) All animals", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main =1)
 
-plot(beh.site$Vegdif, beh.site$Prop_Exotic_RC_clvt, pch=20, cex=1.5, las=1, xlab="Vegetation density difference (m)", ylab="Prop. crossing through culvert")
+plot(beh.site$Vegdif, beh.site$Prop_Exotic_RC_clvt, pch=20, cex=1.5, las=1, xlab="Vegetation difference (m)", ylab="Prop. crossing through culvert")
 title(main = "(b) Exotic Species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main =1)
 
-plot(beh.site$Vegdif, beh.site$Prop_Native_RC_clvt, pch=20, cex=1.5, las=1, xlab="Vegetation density difference (m)", ylab="Prop. crossing through culvert")
+plot(beh.site$Vegdif, beh.site$Prop_Native_RC_clvt, pch=20, cex=1.5, las=1, xlab="Vegetation difference (m)", ylab="Prop. crossing through culvert")
 title(main = "(c) Native Species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main =1)
 
-plot(beh.site$Vegdif, beh.site$Prop_Kang_RC_clvt, pch=20, cex=1.5, las=1, xlab="Vegetation density difference (m)", ylab="Prop. crossing through culvert")
+plot(beh.site$Vegdif, beh.site$Prop_Kang_RC_clvt, pch=20, cex=1.5, las=1, xlab="Vegetation difference (m)", ylab="Prop. crossing through culvert")
 title(main = expression("(d)" *italic(" Macropus giganteus")), outer = F, adj = 0, cex.main = 1, line = 0.6, font.main =4)
 
-plot(beh.site$Vegdif, beh.site$Prop_Small_RC_clvt, pch=20, cex=1.5, las=1, xlab="Vegetation density difference (m)", ylab="Prop. corssing throught culvert")
+plot(beh.site$Vegdif, beh.site$Prop_Small_RC_clvt, pch=20, cex=1.5, las=1, xlab="Vegetation difference (m)", ylab="Prop. corssing throught culvert")
 title(main = "(e) Small species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
 
-plot(beh.site$Vegdif, beh.site$Prop_Large_RC_clvt, pch=20, cex=1.5, las=1, xlab="Vegetation density difference (m)", ylab="Prop. crossing through culvert")
+plot(beh.site$Vegdif, beh.site$Prop_Large_RC_clvt, pch=20, cex=1.5, las=1, xlab="Vegetation difference (m)", ylab="Prop. crossing through culvert")
 title(main = "(f) Large Species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main =1)
 
 
