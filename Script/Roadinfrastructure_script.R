@@ -347,14 +347,14 @@ dat2 <- merge(dat2, rc4, by = c("Site", "Cam_pt"), all.x = T, all.y = F) # Merge
 head(dat2) # Check that this has worked 
 
 
-# Take just the vegetation cover data from the road characteristics data frame and add it to beh4
+# Take just the vegetation cover data from the road characteristics data frame and add it to dat2
 rc5 <- rc[,c("Site", "Veg_cov_C1","Veg_cov_C2","Veg_cov_C3", "Veg_cov_C4", "Veg_cov_R1", "Veg_cov_R2")] # Create a new dataset that only contains the information for site and vegetation 
 rc5 # Check that this has worked
 # To be able to stack the columns we need the package tidyr
 rc6 <- gather(rc5, key = "Cam_pt", value = "Veg_cov", "Veg_cov_C1", "Veg_cov_C2", "Veg_cov_C3", "Veg_cov_C4", "Veg_cov_R1", "Veg_cov_R2") # Stack the vegetation cover columns on top of each other
 rc6 # Check that this worked
 
-# This has worked although we need to change the values in the column Cam_pt so that they can be used to merge by camera point with beh4
+# This has worked although we need to change the values in the column Cam_pt so that they can be used to merge by camera point with dat2
 
 rc6$Cam_pt[1:30] <- "C1"
 rc6$Cam_pt[31:60] <- "C2"
@@ -362,7 +362,7 @@ rc6$Cam_pt[61:90] <- "C3"
 rc6$Cam_pt[91:120] <- "C4"
 rc6$Cam_pt[121:150] <- "R1"
 rc6$Cam_pt[151:180] <- "R2"
-rc6 # Check that this has worked, all looks good can now merge with beh4
+rc6 # Check that this has worked, all looks good can now merge with dat2
 
 dat2 <- merge(dat2, rc6, by = c("Site", "Cam_pt"), all.x = T , all.y = F) # Merge the data in the new site characteristics dataset with dat2 according to Site and Camera point.
 head(dat2); dim(dat2)
@@ -465,6 +465,7 @@ p = 0.62", cex = 1, bty ="n", text.width =1)
 plot(dat2$Clvt_sz, dat2$Length, xlab = "Culvert size", ylab = "Road width/Culvert length (m)", las = 1)
 title(main = "(c)", outer = F, adj = 0, cex.main = 1, line = 0.3)
 legend("topleft", legend = "r = 0.02, p = 0.74", cex = 1, bty = "n", text.width = 1)
+
 
 
 
