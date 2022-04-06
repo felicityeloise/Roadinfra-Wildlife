@@ -13,7 +13,8 @@ rc <- read.table("CharacteristicsR.txt", header = T, stringsAsFactors = T) # Rea
 str(dat) # Check the structure of dat
 head(dat) # Check the first few rows of dat
 str(beh) # Check the structure of beh
-head(beh) # Check the first few rows of beh
+head(beh); dim(beh) # Check the first few rows of beh
+
 
 # Check the levels of each column of the occurrence data
 levels(dat$Cam_typ)
@@ -1710,7 +1711,7 @@ head(beh.site)
 
 
 # All animals
-m_null.2 <- gam(Prop_RC_clvt ~ 1 + 1, family=betar(link="logit"), data = beh.site) 
+m_null.2 <- gam(Prop_RC_clvt ~ 1, family=betar(link="logit"), data = beh.site) 
 summary(m_null.2) # Null model
 
 
@@ -1718,44 +1719,20 @@ m5 <- gam(Prop_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], fam
 summary(m5) # Significant
 AICc(m_null.2); AICc(m5)
 
-# Predict from this model
-ndm5 <- data.frame(Clvt_sz = as.factor(c(rep("small", 2), rep("large", 2))))
-prm5 <- predict.gam(object = m5, newdata = ndm5, se.fit = T, type = "response")
-prm5 <- data.frame(ndm5, fit = round(prm5$fit, 4), se = round(prm5$se.fit, 4))
-prm5$lci <- prm5$fit - (prm5$se * 1.96)
-prm5$uci <- prm5$fit + (prm5$se * 1.96)
 
-#Plot predictions from this model
-plot(c(1,2), prm5$fit[c(1,3)], pch = 20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm5$lci[c(1,3)], c(1,2), prm5$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(a) All animals", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
+AICc(m_null.2); AICc(m5) # Null model is better, 3 points lower than model 5. 
 
 # Kangaroos
-m_null.3 <- gam(Prop_Kang_RC_clvt ~ 1 + 1, family = betar(link="logit"), data = beh.site)
+m_null.3 <- gam(Prop_Kang_RC_clvt ~ 1, family = betar(link="logit"), data = beh.site)
 summary(m_null.3) # Null model
 
 m6 <- gam(Prop_Kang_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m6) # Not sig.
 AICc(m_null.3); AICc(m6) #m6 is better than the null
 
-# Predict from this model
-ndm6 <- data.frame(Clvt_sz = as.factor(c(rep("small", 2), rep("large", 2))))
-prm6 <- predict.gam(object = m7, newdata = ndm7, se.fit = T, type = "response")
-prm6 <- data.frame(ndm6, fit = round(prm6$fit, 4), se = round(prm6$se.fit, 4))
-prm6$lci <- prm6$fit - (prm6$se * 1.96)
-prm6$uci <- prm6$fit + (prm6$se * 1.96)
-
-# Plot predictions from this model
-plot(c(1,2), prm6$fit[c(1,3)], pch = 20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm6$lci[c(1,3)], c(1,2), prm6$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = expression("(d)" *italic(" Macropus giganteus")), outer = F, adj = 0, cex.main = 1, line = 0.6, font.main =4)
-
 
 # Exotics
-m_null.4 <- gam(Prop_Exotic_RC_clvt ~ 1 + 1, family = betar(link="logit"), data = beh.site)
+m_null.4 <- gam(Prop_Exotic_RC_clvt ~ 1, family = betar(link="logit"), data = beh.site)
 summary(m_null.4) # Null model
 
 
@@ -1764,129 +1741,34 @@ summary(m7)# Not sig.
 AICc(m_null.4); AICc(m7)
 
 
-# Predict from this model
-ndm7 <- data.frame(Clvt_sz = as.factor(c(rep("small", 2), rep ("large", 2))))
-prm7 <- predict.gam(object = m7, newdata = ndm7, se.fit = T, type = "response")
-prm7 <- data.frame(ndm7, fit = round(prm7$fit, 4), se = round(prm7$se.fit, 4))
-prm7$lci <- prm7$fit - (prm7$se * 1.96)
-prm7$uci <- prm7$fit + (prm7$se * 1.96)
-
-# Plot predictions from this model
-plot(c(1,2), prm7$fit[c(1,3)], pch= 20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm7$lci[c(1.3)], c(1,2), prm7$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(b) Exotic species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-
 # Natives
-m_null.5 <- gam(Prop_Native_RC_clvt ~ 1 + 1, family = betar(link="logit"), data = beh.site)
+m_null.5 <- gam(Prop_Native_RC_clvt ~ 1, family = betar(link="logit"), data = beh.site)
 summary(m_null.5) # Null model
 
 m8 <- gam(Prop_Native_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m8)# Not sig.
 AICc(m_null.5); AICc(m8)
 
-# Predict from this model
-ndm8 <- data.frame(Clvt_sz = as.factor(c(rep("small", 2), rep ("large", 2))))
-prm8 <- predict.gam(object = m8, newdata = ndm8, se.fit = T, type = "response")
-prm8 <- data.frame(ndm8, fit = round(prm8$fit, 4), se = round(prm8$se.fit, 4))
-prm8$lci <- prm8$fit - (prm8$se * 1.96)
-prm8$uci <- prm8$fit + (prm8$se * 1.96)
-
-# Plot predictions from this model
-plot(c(1,2), prm8$fit[c(1,3)], pch = 20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm8$lci[c(1,3)], c(1,2), prm8$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(c) Native species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
 
 # Small species
 
-m_null.6 <- gam(Prop_Small_RC_clvt ~ 1 + 1, family = betar(link="logit"), data = beh.site)
+m_null.6 <- gam(Prop_Small_RC_clvt ~ 1, family = betar(link="logit"), data = beh.site)
 summary(m_null.6) # Null model
 
 m9 <- gam(Prop_Small_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m9)# Not sig.
 AICc(m_null.6); AICc(m9)
 
-# Predict from this model
-ndm9 <- data.frame(Clvt_sz = as.factor(c(rep("small", 2), rep ("large", 2))))
-prm9 <- predict.gam(object = m9, newdata = ndm9, se.fit = T, type = "response")
-prm9 <- data.frame(ndm9, fit = round(prm9$fit, 4), se = round(prm9$se.fit, 4))
-prm9$lci <- prm9$fit - (prm9$se * 1.96)
-prm9$uci <- prm9$fit + (prm9$se * 1.96)
-
-# Plot predictions from this model
-plot(c(1,2), prm9$fit[c(1,3)], pch =20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm9$lci[c(1,3)], c(1,2), prm9$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(e) Small species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
 
 # Large species
 
-m_null.7 <- gam(Prop_Large_RC_clvt ~ 1 + 1, family = betar(link="logit"), data = beh.site)
+m_null.7 <- gam(Prop_Large_RC_clvt ~ 1, family = betar(link="logit"), data = beh.site)
 summary(m_null.7) # Null model
 
 m10 <- gam(Prop_Large_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m10)# Significant influence of large culverts on large species crossings
 AICc(m_null.7); AICc(m10)
 
-# Predict from this model
-ndm10 <- data.frame(Clvt_sz = as.factor(c(rep("small", 2), rep ("large", 2))))
-prm10 <- predict.gam(object = m10, newdata = ndm10, se.fit = T, type = "response")
-prm10 <- data.frame(ndm10, fit = round(prm10$fit, 4), se = round(prm10$se.fit, 4))
-prm10$lci <- prm10$fit - (prm10$se * 1.96)
-prm10$uci <- prm10$fit + (prm10$se * 1.96)
-
-# Plot predictions from this model
-plot(c(1,2), prm10$fit[c(1,3)], pch = 20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm10$lci[c(1,3)], c(1,2), prm10$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(f) Large species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-
-# Plot these models
-dev.new(width=10, height=12, dpi=80, pointsize=20, noRStudioGD = T)
-par(mfrow=c(3, 2), mgp=c(2.5,1,0), mar=c(4,4,3,3))
-
-plot(c(1,2), prm5$fit[c(1,3)], pch = 20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm5$lci[c(1,3)], c(1,2), prm5$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(a) All animals", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-plot(c(1,2), prm7$fit[c(1,3)], pch= 20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm7$lci[c(1.3)], c(1,2), prm7$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(b) Exotic species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-plot(c(1,2), prm8$fit[c(1,3)], pch = 20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm8$lci[c(1,3)], c(1,2), prm8$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(c) Native species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-plot(c(1,2), prm6$fit[c(1,3)], pch = 20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm6$lci[c(1,3)], c(1,2), prm6$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = expression("(d)" *italic(" Macropus giganteus")), outer = F, adj = 0, cex.main = 1, line = 0.6, font.main =4)
-
-
-plot(c(1,2), prm9$fit[c(1,3)], pch =20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm9$lci[c(1,3)], c(1,2), prm9$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(e) Small species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-plot(c(1,2), prm10$fit[c(1,3)], pch = 20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm10$lci[c(1,3)], c(1,2), prm10$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(f) Large species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
 
 
 
@@ -1969,39 +1851,11 @@ m11 <- gam(Prop_RC_clvt ~ Vegmean, data = beh.site[which(beh.site$RC == 1),], fa
 summary(m11) # Not sig.
 AICc(m_null.2); AICc(m11)
 
-# Predict from this model
-ndm11 <- data.frame(Vegmean = seq(min(beh.site$Vegmean), max(beh.site$Vegmean), length.out = 50))
-prm11 <- predict.gam(object = m11, newdata = ndm11, se.fit = T, type = "response")
-prm11 <- data.frame(ndm11, fit = round(prm11$fit, 4), se = round(prm11$se.fit, 4))
-prm11$lci <- prm11$fit - (prm11$se * 1.96)
-prm11$uci <- prm11$fit + (prm11$se * 1.96)
-
-
-# Plot prediction from this model
-plot(prm11$Vegmean, prm11$fit, pch = 20, ylim = c(0,1), xlab = "Average vegetation density (m)", ylab = "Prop. crossin through culvert", type = "l")
-lines(prm11$Vegmean, prm11$lci, lty = 2)
-lines(prm11$Vegmean, prm11$uci, lty = 2)
-title(main = "(a) All animals", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
 # Kangaroos
 
 m12 <- gam(Prop_Kang_RC_clvt ~ Vegmean, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m12) # Not sig.
 AICc(m_null.3); AICc(m12)
-
-# Predict from this model 
-ndm12 <- data.frame(Vegmean = seq(min(beh.site$Vegmean), max(beh.site$Vegmean), length.out = 50))
-prm12 <- predict.gam(object = m12, newdata = ndm12, se.fit = T, type = "response")
-prm12 <- data.frame(ndm12, fit = round(prm12$fit, 4), se = round(prm12$se.fit, 4))
-prm12$lci <- prm12$fit - (prm12$se * 1.96)
-prm12$uci <- prm12$fit + (prm12$se * 1.96)
-
-# Plot predictions from this model
-plot(prm12$Vegmean, prm12$fit, pch = 20, ylim = c(0,1), xlab = "Average vegetation density (m)", ylab = "Prop. crossing through culvert", type = "l")
-lines(prm12$Vegmean, prm12$lci, lty = 2)
-lines(prm12$Vegmean, prm12$uci, lty = 2)
-title(main = expression("(d)" *italic(" Macropus giganteus")), outer = F, adj = 0, cex.main = 1, line = 0.5, font.main = 1)
 
 
 
@@ -2011,18 +1865,6 @@ m13 <- gam(Prop_Exotic_RC_clvt ~ Vegmean, data = beh.site[which(beh.site$RC == 1
 summary(m13)# Not sig.
 AICc(m_null.4); AICc(m13)
 
-# Predict from this model
-ndm13 <- data.frame(Vegmean = seq(min(beh.site$Vegmean), max(beh.site$Vegmean), length.out = 50))
-prm13 <- predict.gam(object = m13, newdata = ndm13, se.fit = T, type = "response")
-prm13 <- data.frame(ndm13, fit = round(prm13$fit, 4), se = round(prm13$se.fit, 4))
-prm13$lci <- prm13$fit - (prm13$se * 1.96)
-prm13$uci <- prm13$fit + (prm13$se * 1.96)
-
-# Plot predictions from this model
-plot(prm13$Vegmean, prm13$fit, pch = 20, ylim = c(0,1), xlab = "Average vegetation density (m)", ylab = "Prop. crossing through culvert", type = "l")
-lines(prm13$Vegmean, prm13$lci, lty = 2)
-lines(prm13$Vegmean, prm13$uci, lty = 2)
-title(main = "(b) Exotic species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
 
 
 
@@ -2031,38 +1873,12 @@ m14 <- gam(Prop_Native_RC_clvt ~ Vegmean, data = beh.site[which(beh.site$RC == 1
 summary(m14)# Not sig.
 AICc(m_null.5); AICc(m14)
 
-# Predict from this model
-ndm14 <- data.frame(Vegmean = seq(min(beh.site$Vegmean), max(beh.site$Vegmean), length.out = 50))
-prm14 <- predict.gam(object = m14, newdata = ndm14, se.fit = T, type = "response")
-prm14 <- data.frame(ndm14, fit = round(prm14$fit, 4), se = round(prm14$se.fit, 4))
-prm14$lci <- prm14$fit - (prm14$se * 1.96)
-prm14$uci <- prm14$fit + (prm14$se * 1.96)
-
-# Plot predictions from this model
-plot(prm14$Vegmean, prm14$fit, pch = 20, ylim = c(0,1), xlab = "Average vegetation density (m)", ylab = "Prop crossing through culvert", type = "l")
-lines(prm14$Vegmean, prm14$lci, lty = 2)
-lines(prm14$Vegmean, prm14$uci, lty = 2)
-title(main = "(c) Native species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
 
 # Small species
 
 m15 <- gam(Prop_Small_RC_clvt ~ Vegmean, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m15)# Not sig.
 AICc(m_null.6); AICc(m15)
-
-# Predict from this model
-ndm15 <- data.frame(Vegmean = seq(min(beh.site$Vegmean), max(beh.site$Vegmean), length.out = 50))
-prm15 <- predict.gam(object = m15, newdata = ndm15, se.fit = T, type = "response")
-prm15 <- data.frame(ndm15, fit = round(prm15$fit, 4), se = round(prm15$se.fit, 4))
-prm15$lci <- prm15$fit - (prm15$se * 1.96)
-prm15$uci <- prm15$fit + (prm15$se * 1.96)
-
-# Plot predictions from this model
-plot(prm15$Vegmean, prm15$fit, pch = 20, ylim = c(0,1), xlab = "Average vegetation density", ylab = "Prop. crossing through culvert", type = "l")
-lines(prm15$Vegmean, prm15$lci, lty = 2)
-lines(prm15$Vegmean, prm15$uci, lty = 2)
-title(main = "(e) Small species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
 
 
 
@@ -2071,232 +1887,45 @@ m16 <- gam(Prop_Large_RC_clvt ~ Vegmean, data = beh.site[which(beh.site$RC == 1)
 summary(m16)# Not sig.
 AICc(m_null.7); AICc(m16)
 
-# Predict from this model
-ndm16 <- data.frame(Vegmean = seq(min(beh.site$Vegmean), max(beh.site$Vegmean), length.out = 50))
-prm16 <- predict.gam(object = m16, newdata = ndm16, se.fit = T, type = "response")
-prm16 <- data.frame (ndm16, fit = round(prm16$fit, 4), se = round(prm16$fit, 4))
-prm16$lci <- prm16$fit - (prm16$se * 1.96)
-prm16$uci <- prm16$fit + (prm16$se * 1.96)
-
-# Plot predictions from this model
-plot(prm16$Vegmean, prm16$ fit, pch = 20, ylim = c(0,1), xlab = "Average vegetation density (m)", ylab = "Prop. crossing through culvert", type = "l")
-lines(prm16$Vegmean, prm16$lci, lty = 2)
-lines(prm16$Vegmean, prm16$uci, lty = 2)
-title(main = "(f) Large species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-# Plot these models
-dev.new(width=10, height=12, dpi=80, pointsize=20, noRStudioGD = T)
-par(mfrow=c(3, 2), mgp=c(2.5,1,0), mar=c(4,4,3,3))
-
-plot(prm11$Vegmean, prm11$fit, pch = 20, ylim = c(0,1), xlab = "Average vegetation density (m)", ylab = "Prop. crossin through culvert", type = "l")
-lines(prm11$Vegmean, prm11$lci, lty = 2)
-lines(prm11$Vegmean, prm11$uci, lty = 2)
-title(main = "(a) All animals", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-plot(prm13$Vegmean, prm13$fit, pch = 20, ylim = c(0,1), xlab = "Average vegetation density (m)", ylab = "Prop. crossing through culvert", type = "l")
-lines(prm13$Vegmean, prm13$lci, lty = 2)
-lines(prm13$Vegmean, prm13$uci, lty = 2)
-title(main = "(b) Exotic species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-plot(prm14$Vegmean, prm14$fit, pch = 20, ylim = c(0,1), xlab = "Average vegetation density (m)", ylab = "Prop crossing through culvert", type = "l")
-lines(prm14$Vegmean, prm14$lci, lty = 2)
-lines(prm14$Vegmean, prm14$uci, lty = 2)
-title(main = "(c) Native species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-plot(prm12$Vegmean, prm12$fit, pch = 20, ylim = c(0,1), xlab = "Average vegetation density (m)", ylab = "Prop. crossing through culvert", type = "l")
-lines(prm12$Vegmean, prm12$lci, lty = 2)
-lines(prm12$Vegmean, prm12$uci, lty = 2)
-title(main = expression("(d)" *italic(" Macropus giganteus")), outer = F, adj = 0, cex.main = 1, line = 0.5, font.main = 1)
-
-
-plot(prm15$Vegmean, prm15$fit, pch = 20, ylim = c(0,1), xlab = "Average vegetation density", ylab = "Prop. crossing through culvert", type = "l")
-lines(prm15$Vegmean, prm15$lci, lty = 2)
-lines(prm15$Vegmean, prm15$uci, lty = 2)
-title(main = "(e) Small species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-plot(prm16$Vegmean, prm16$ fit, pch = 20, ylim = c(0,1), xlab = "Average vegetation density (m)", ylab = "Prop. crossing through culvert", type = "l")
-lines(prm16$Vegmean, prm16$lci, lty = 2)
-lines(prm16$Vegmean, prm16$uci, lty = 2)
-title(main = "(f) Large species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-
 
 
 # Model selection framework information
 #All animals
-AICc(m_null.2); AICc(m5); AICc(m11) # m5 is best
+AICc(m_null.2); AICc(m5); AICc(m11) # Null model is best
 logLik.gam(m11)
 logLik.gam(m5)
 logLik.gam(m_null.2)
 
 
 # Exotic species
-AICc(m_null.4); AICc(m7); AICc(m13) #m7 is best
+AICc(m_null.4); AICc(m7); AICc(m13) #Null model is best
 logLik.gam(m13)
 logLik.gam(m7)
 logLik.gam(m_null.4)
 
 # Native species
-AICc(m_null.5); AICc(m8); AICc(m14) # M8 is best
+AICc(m_null.5); AICc(m8); AICc(m14) # Null model is best
 logLik.gam(m14)
 logLik.gam(m8)
 logLik.gam(m_null.5)
 
 
 # Kangaroos
-AICc(m_null.3); AICc(m6); AICc(m12) #m12 is best
+AICc(m_null.3); AICc(m6); AICc(m12) #Null model is best
 logLik.gam(m6)
 logLik.gam(m12)
 logLik.gam(m_null.3)
 
 # Small species
-AICc(m_null.6); AICc(m9); AICc(m15) #m9 is best
+AICc(m_null.6); AICc(m9); AICc(m15) #Null model is best
 logLik.gam(m15)
 logLik.gam(m9)
-logLik.gam(m15)
+logLik.gam(m_null.6)
 
 
 # Large species
-AICc(m_null.7); AICc(m10); AICc(m16) # m16 is best
+AICc(m_null.7); AICc(m10); AICc(m16) # Null model is best
 logLik.gam(m16)
 logLik.gam(m10)
 logLik.gam(m_null.7)
-
-
-
-# We are going to make predictions from the top ranked model (Average vegetation density or culvert size) for each animal category. Predictions will be made from the culvert size models for all animals, native species, exotic species, and small species. Predictions will be made from the average vegetation density models for Kangaroos and large species. To make predictions for gams, have to use a slightly different prediction function
-
-# All animals - culvert size m5
-# Predict from this model
-ndm5 <- data.frame(Clvt_sz = as.factor(c(rep("small", 2), rep("large", 2))))
-prm5 <- predict.gam(object = m5, newdata = ndm5, se.fit = T, type = "response")
-prm5 <- data.frame(ndm5, fit = round(prm5$fit, 4), se = round(prm5$se.fit, 4))
-prm5$lci <- prm5$fit - (prm5$se * 1.96)
-prm5$uci <- prm5$fit + (prm5$se * 1.96)
-
-#Plot predictions from this model
-plot(c(1,2), prm5$fit[c(1,3)], pch = 20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm5$lci[c(1,3)], c(1,2), prm5$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(a) All animals", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-# Exotic species - culvert size model m7
-# Predict from this model
-ndm7 <- data.frame(Clvt_sz = as.factor(c(rep("small", 2), rep ("large", 2))))
-prm7 <- predict.gam(object = m7, newdata = ndm7, se.fit = T, type = "response")
-prm7 <- data.frame(ndm7, fit = round(prm7$fit, 4), se = round(prm7$se.fit, 4))
-prm7$lci <- prm7$fit - (prm7$se * 1.96)
-prm7$uci <- prm7$fit + (prm7$se * 1.96)
-
-# Plot predictions from this model
-plot(c(1,2), prm7$fit[c(1,3)], pch= 20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm7$lci[c(1.3)], c(1,2), prm7$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(b) Exotic species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-# Native species - culvert size model m8
-# Predict from this model
-ndm8 <- data.frame(Clvt_sz = as.factor(c(rep("small", 2), rep ("large", 2))))
-prm8 <- predict.gam(object = m8, newdata = ndm8, se.fit = T, type = "response")
-prm8 <- data.frame(ndm8, fit = round(prm8$fit, 4), se = round(prm8$se.fit, 4))
-prm8$lci <- prm8$fit - (prm8$se * 1.96)
-prm8$uci <- prm8$fit + (prm8$se * 1.96)
-
-# Plot predictions from this model
-plot(c(1,2), prm8$fit[c(1,3)], pch = 20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm8$lci[c(1,3)], c(1,2), prm8$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(c) Native species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-# Kangaroos - average veg dense model m12 - CIs look bad
-# Predict from this model 
-ndm12 <- data.frame(Vegmean = seq(min(beh.site$Vegmean), max(beh.site$Vegmean), length.out = 50))
-prm12 <- predict.gam(object = m12, newdata = ndm12, se.fit = T, type = "response")
-prm12 <- data.frame(ndm12, fit = round(prm12$fit, 4), se = round(prm12$se.fit, 4))
-prm12$lci <- prm12$fit - (prm12$se * 1.96)
-prm12$uci <- prm12$fit + (prm12$se * 1.96)
-
-# Plot predictions from this model
-plot(prm12$Vegmean, prm12$fit, pch = 20, ylim = c(0,1), xlab = "Average vegetation density (m)", ylab = "Prop. crossing through culvert", type = "l")
-lines(prm12$Vegmean, prm12$lci, lty = 2)
-lines(prm12$Vegmean, prm12$uci, lty = 2)
-title(main = expression("(d)" *italic(" Macropus giganteus")), outer = F, adj = 0, cex.main = 1, line = 0.5, font.main = 1)
-
-# Small species - culvert size model m9
-# Predict from this model
-ndm9 <- data.frame(Clvt_sz = as.factor(c(rep("small", 2), rep ("large", 2))))
-prm9 <- predict.gam(object = m9, newdata = ndm9, se.fit = T, type = "response")
-prm9 <- data.frame(ndm9, fit = round(prm9$fit, 4), se = round(prm9$se.fit, 4))
-prm9$lci <- prm9$fit - (prm9$se * 1.96)
-prm9$uci <- prm9$fit + (prm9$se * 1.96)
-
-# Plot predictions from this model
-plot(c(1,2), prm9$fit[c(1,3)], pch =20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm9$lci[c(1,3)], c(1,2), prm9$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(e) Small species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-# Large species - average veg dense model m16
-# Predict from this model
-ndm16 <- data.frame(Vegmean = seq(min(beh.site$Vegmean), max(beh.site$Vegmean), length.out = 50))
-prm16 <- predict.gam(object = m16, newdata = ndm16, se.fit = T, type = "response")
-prm16 <- data.frame (ndm16, fit = round(prm16$fit, 4), se = round(prm16$fit, 4))
-prm16$lci <- prm16$fit - (prm16$se * 1.96)
-prm16$uci <- prm16$fit + (prm16$se * 1.96)
-
-# Plot predictions from this model
-plot(prm16$Vegmean, prm16$ fit, pch = 20, ylim = c(0,1), xlab = "Average vegetation density (m)", ylab = "Prop. crossing through culvert", type = "l")
-lines(prm16$Vegmean, prm16$lci, lty = 2)
-lines(prm16$Vegmean, prm16$uci, lty = 2)
-title(main = "(f) Large species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-# Produce the plots for the paper
-dev.new(width=10, height=12, dpi=80, pointsize=20, noRStudioGD = T)
-par(mfrow=c(3, 2), mgp=c(2.5,1,0), mar=c(4,4,3,3))
-
-plot(c(1,2), prm5$fit[c(1,3)], pch = 20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm5$lci[c(1,3)], c(1,2), prm5$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(a) All animals", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-plot(c(1,2), prm7$fit[c(1,3)], pch= 20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm7$lci[c(1.3)], c(1,2), prm7$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(b) Exotic species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-plot(c(1,2), prm8$fit[c(1,3)], pch = 20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm8$lci[c(1,3)], c(1,2), prm8$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(c) Native species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-plot(prm12$Vegmean, prm12$fit, pch = 20, ylim = c(0,1), xlab = "Average vegetation density (m)", ylab = "Prop. crossing through culvert", type = "l")
-lines(prm12$Vegmean, prm12$lci, lty = 2)
-lines(prm12$Vegmean, prm12$uci, lty = 2)
-title(main = expression("(d)" *italic(" Macropus giganteus")), outer = F, adj = 0, cex.main = 1, line = 0.5, font.main = 1)
-
-
-plot(c(1,2), prm9$fit[c(1,3)], pch =20, xlim = c(0.5, 2.5), ylim = c(0,1), xlab = "Culvert size", ylab = "Prop. crossing through culvert", type = "p", xaxt = "n")
-axis(side = 1, at = c(1,2), labels = c("small", "large"))
-arrows(c(1,2), prm9$lci[c(1,3)], c(1,2), prm9$uci[c(1,3)], length = 0.05, code = 3, angle = 90)
-title(main = "(e) Small species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-plot(prm16$Vegmean, prm16$ fit, pch = 20, ylim = c(0,1), xlab = "Average vegetation density (m)", ylab = "Prop. crossing through culvert", type = "l")
-lines(prm16$Vegmean, prm16$lci, lty = 2)
-lines(prm16$Vegmean, prm16$uci, lty = 2)
-title(main = "(f) Large species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
 
