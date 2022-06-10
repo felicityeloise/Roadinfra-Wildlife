@@ -1134,9 +1134,11 @@ lines(prM4b$Veg_dense[prM4b$Type=="R"], prM4b$lci[prM4b$Type=="R"], lty = 2, col
 lines(prM4b$Veg_dense[prM4b$Type=="R"], prM4b$uci[prM4b$Type=="R"], lty = 2, col = "red")
 title(main = "(b) Native species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
 
-plot(c(1,2), prM17$fit[c(1,3)], pch = 20, ylim=c(0,1), xlim=c(0.5,2.5), xlab = "Camera position", ylab = "Probability of occurrence", type = "p", xaxt="n", col = c("red", "black"))
+
+
+plot(c(1,2), prM17$fit[c(1,3)], pch = 20, ylim=c(0,1), xlim=c(0.5,2.5), xlab = "Camera position", ylab = "Probability of occurrence", type = "p", xaxt="n")
 axis(side=1, at=c(1,2), labels=c("culvert","road"))
-arrows(c(1,2), prM17$lci[c(1,3)], c(1,2), prM17$uci[c(1,3)], length = 0.05, code=3, angle=90, col = c("red", "black"))
+arrows(c(1,2), prM17$lci[c(1,3)], c(1,2), prM17$uci[c(1,3)], length = 0.05, code=3, angle=90)
 title(main = "(c) Small species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
 
 plot(c(1,2), prM15a$fit[c(1,3)], pch = 20, ylim=c(0,1), xlim=c(0.5,2.5), xlab = "Culvert size", ylab = "Probability of occurrence", type = "p", xaxt="n")
@@ -1144,10 +1146,10 @@ axis(side=1, at=c(1,2), labels=c("small","large"))
 arrows(c(1,2), prM15a$lci[c(1,3)], c(1,2), prM15a$uci[c(1,3)], length = 0.05, code=3, angle=90)
 title(main = "(d) Large species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
 
-par(xpd=NA)
-legend(x=2.8, y=1, legend=c("Culvert", "Road"), col=c("black", "red"), lty=1, lwd=0.5, cex=1, bty="n", text.width=0.2)
-par(xpd=F)
 
+par(xpd=NA)
+legend(x=2.8, y=2.8, legend=c("Culvert", "Road"), col=c("black", "red"), lty=1, lwd=0.5, cex=1, bty="n", text.width=0.2, title = "Camera position")
+par(xpd=F)
 
 
 # Plots for supplementary material - interactive models that were better than the null model and within AICc2 of the additive model. 
@@ -1210,11 +1212,11 @@ title(main = "(d) Small species", outer = F, adj =0, cex.main = 1, line = 0.3, f
 # Now lets look at how behaviours influence culvert use
 # Explore behavioural data
 
-head(beh); dim(beh) # Look at the first few rows of the data, there are 4713 individual triggers
-sum(table(beh$Behaviour)) # There are 4713 rows of data
-range(beh$Anim_num) # There are 1159 individual animals
+head(beh); dim(beh) # Look at the first few rows of the data, there are 4714 individual triggers
+sum(table(beh$Behaviour)) # There are 4714 rows of data
+range(beh$Anim_num) # There are 1164 individual animals
 table(beh$Behaviour) # There are 73 culvert crossing occurrences, 2865 foraging occurrences, 505 road crossing occurences, and 1270 sitting/standing still occurrences in the behaviour data.
-sum(2865+1270) # What is the sum of the foraging and sitting still behaviours, 4135 occurences of 4713 individual triggers. 
+sum(2865+1270) # What is the sum of the foraging and sitting still behaviours, 4135 occurences of 4714 individual triggers. 
 
 
 
@@ -1234,7 +1236,7 @@ mdat[which(mdat$Anim_num == manim[1]),] # Look at the first individual of the mu
 
 ## Explore the data
 length(manim) # There are 696 repeated observations. 
-length(unique(beh$Anim_num)) # Although there are 4713 observations there are only 1158 unique animals. There are more observations than we want/need. 
+length(unique(beh$Anim_num)) # Although there are 4714 observations there are only 1164 unique animals. There are more observations than we want/need. 
 
 # How do we deal with the repeated observations? Do we take the first observation for each day or hour? No, we would loose data by filtering the data by the hour or day that it was observed in as sometimes individuals displayed different behaviours depending on the hour of the day, this would mean we could loose data for culvert crossings which are already quite low. 
 # Therefore, if there is a repeated observation within same hour we remove it, but we will keep in mind the behaviour. So we want 1 observation per hour for each behaviour per individual animal. 
@@ -1250,9 +1252,16 @@ beh2 <- beh[order(beh$Anim_num,beh$Behaviour, beh$Day, beh$Month, beh$Hour, beh$
 rownames(beh2)<-1:nrow(beh2)
 beh2[beh2$Anim_num==42,] # Lets have a look at one of the individual animals and ensure that it is ordered correctly. 
 
+# To begin with, we are going to be removing multiple observations from the dataset. Some animals are known to display RX on both culvert and road cameras with the culvert camera recroded first. We only want to have road crossings recorded on road cameras we need to delete any road crossings on culvert cameras for animals 35, 108, 242, and 332 lets print a table here so we can implement this. 
+library(writexl)
+
+write_xlsx(beh2, "beh2")
+
+beh2.1 <- read.table("beh2.1.txt", header = T, stringsAsFactors = T)
+
 
 # Create a new data frame with only the first observation for each animal per hour per behaviour type:
-beh3 <- beh2[-which(duplicated(beh2$anim_hr)),]
+beh3 <- beh2.1[-which(duplicated(beh2.1$anim_hr)),]
 beh3 <- droplevels(beh3)
 rownames(beh3) <- 1:nrow(beh3)
 head(beh3); dim(beh3)
@@ -1272,14 +1281,14 @@ head(beh4.1, 10); dim(beh4.1) # Check this has worked, there are now 1671 indivi
 head(beh3, 10); dim(beh3) # We can see that the trigger in row 4 has now been removed as it was not independent, there were 402 individual triggers in the data although, 6 of these triggers were not independent and were removed. 
 str(beh4.1) # Double check everything has been coded and imported correctly. 
 dim(beh4.1); head(beh4.1) # There are 1671 observations in beh4.1
-table(beh4.1$Behaviour) # There are now only 32 culvert crossings, 946 foraging, 365 road crossings, and 328 sitting still occurences 
+table(beh4.1$Behaviour) # There are now only 32 culvert crossings, 948 foraging, 366 road crossings, and 330 sitting still occurences 
 range(beh4.1$Site) # There are still 30 sites
 
 
 
 
 # HOW MANY INDEPENDENT OBSERVATIONS ARE THERE FOR ROAD CROSSING BEHAVIOURS?
-
+# We will overwrite the above as we only want to know about crossing behaviour for this dataset
 
 
 ## Investigate the behavioural data
@@ -1292,6 +1301,8 @@ head(beh2) # Check how the data looks, the row numbers are not consistent 1-10 e
 rownames(beh2) <- 1: nrow(beh2) # Change the row names so that they are consistently numbered
 table(beh2$Behaviour) # How many animals are observed for each behaviour in this dataframe?
 table(beh2$Behaviour, beh2$Species)
+table(beh$Behaviour, beh$Species)
+
 
 # Discovery 2 - There are more animals crossing over the surface of the road. Although, we must consider that some animals captured on the culvert cameras were observed crossing the road and that there was double the trapping effort on culverts versus roads, as culverts had 4 cameras, and roads only 2 cameras. 
 # How to deal with the difference in trap effort between road and culvert cameras, removing repeated obs. of animals?
@@ -1308,9 +1319,9 @@ mdat[which(mdat$Anim_num == manim[1]),] # Look at the first individual of the mu
 
 
 ## Explore the data
-length(manim) # There are 111 repeated observations. 
-dim(beh2) # There are 578 observations of road crossing and culvert crossing behaviours, with 111 repeated observations. 
-length(unique(beh2$Anim_num)) # Although there are 578 observations there are only 383 unique animals. There are more observations than we want/need. 
+length(manim) # There are 110 repeated observations. 
+dim(beh2) # There are 579 observations of road crossing and culvert crossing behaviours, with 110 repeated observations. 
+length(unique(beh2$Anim_num)) # Although there are 578 observations there are only 384 unique animals. There are more observations than we want/need. 
 
 # How do we deal with the repeated observations? Do we take the first observation for each day or hour? No, we would loose data by filtering the data by the hour or day that it was observed in as sometimes individuals displayed different behaviours depending on the hour of the day, this would mean we could loose data for culvert crossings which are already quite low. 
 # Therefore, if there is a repeated observation within same hour we remove it, but we will keep in mind the behaviour. So we want 1 observation per hour for each behaviour per individual animal. 
@@ -1326,9 +1337,17 @@ beh2 <- beh2[order(beh2$Anim_num,beh2$Behaviour, beh2$Day, beh2$Month, beh2$Hour
 rownames(beh2)<-1:nrow(beh2)
 beh2[beh2$Anim_num==25,] # Lets have a look at one of the individual animals and ensure that it is ordered correctly. 
 
+# To begin with, we are going to be removing multiple observations from the dataset. Some animals are known to display RX on both culvert and road cameras with the culvert camera recorded first. We only want to have road crossings recorded on road cameras we need to delete any road crossings on culvert cameras for animals 35, 108, 242, and 332 lets print a table here so we can implement this. We did this before so read in the data and use from here onwards
+
+
+write_xlsx(beh2, "beh2a")
+
+beh2a <- read.table("beh2a.txt", header = T, stringsAsFactors = T)
+
+
 
 # Create a new data frame with only the first observation for each animal per hour per behaviour type:
-beh3 <- beh2[-which(duplicated(beh2$anim_hr)),]
+beh3 <- beh2a[-which(duplicated(beh2a$anim_hr)),]
 beh3 <- droplevels(beh3)
 rownames(beh3) <- 1:nrow(beh3)
 head(beh3); dim(beh3)
@@ -1339,7 +1358,6 @@ beh3$behav<-ifelse(beh3$Behaviour=="RX", 0, 1) # We want to assign numeric value
 
 # We know that the occurrences are still not independent, a cow is seen at 11:21 and then again at 12:07 on the same day, we want there to be an interval of an hour between occurrences so we need to fix this. Need to install package to write data into excel file and will edit the data through excel
 # install.packages("writexl")
-library(writexl)
 write_xlsx(beh3, "beh3") # Create spreadsheet for excel data filtering steps
 
 # Import the data back into R
@@ -1422,7 +1440,6 @@ head(beh4); dim(beh4) # Check that this has worked, no new rows have been added 
 
 # We now have all the road characteristics data we wanted added to beh4
 
-
 # EXPLORE THE BEHAVIOURAL DATA
 t1 <- table(beh4$Behaviour, beh4$Species) # Shows the number of crossings for each species per behaviour.  
 t1[1,]/colSums(t1) # The proportion of each species using culverts to cross roads. 7% of Kangaroos used culverts to cross roads, all and lace monitors used culverts to cross roads, 50% of cows used culverts to cross roads, only 2% of Whiptail wallabies used culverts to cross roads. Although, this is not taking into account trap effort. 
@@ -1458,29 +1475,29 @@ AICc(mnull); AICc(m10); AICc(m12); AICc(m13) # The model that fits the data best
 rc7 <- rc[,c("Site", "Length", "Clvt_wdt", "Clvt_ht", "Clvt_wdt")] # Create a new data frame with culvert variables
 beh5 <- merge(beh4, rc7, by = "Site", all.x = T, all.y = F) # Merge this with beh4 but create a new data set 
 
-
-
+# We want to discard any observations of road crossings on culvert cameras
 dir() # Get the directory so we can access functions that are saved in separate files
 source("~/Desktop/Github_2/Roadinfra-Wildlife/Functions/Felicity_Functions.R") # Load the functions to this script 
-
+tidy.df
 head(beh5); dim(beh5) # Check the head of the data
 length(unique(beh2$Site)) # There are 14 sites in this dataset
-beh6 <- beh5[-which(beh5$Behaviour == "RX" & beh5$Type == "C"),] # If we reduced this dataset down what would happen
-beh6<- tidy.df(beh6) # Clean it up
+beh6 <- beh5[-which(beh5$Behaviour == "RX" & beh5$Type == "C"),] # Remove RX on culvert cameras
+beh6 <- tidy.df(beh6) # Clean it up
 head(beh6); dim(beh6) # Check how it looks
 row.names(beh6) # Redo row names
+
 str(beh6) # Check everything is ok
 length(unique(beh6$Site)) # How many sites are included in the beh6 data? 12
 length(unique(beh5$Site)) # How many sites are included in the beh5 data? 14
 
+
+table(beh6$Behaviour)
 # Lets go back and look at the data again. 
 table(beh6$Species, beh6$Behaviour) # How many animals were observed performing each road crossing behaviour? 
 
-head(beh6); dim(beh6) # Compare beh6 and beh5
-head(beh5, 3); dim(beh5) # When we reduced the data even further by removing road crossings from culvert cameras we only ended up with 12 sites, we want to go back to beh5 which still contains road crossing on culvert cameras as this has 2 more sites included. The original dataset had 28 sites, 14 of these sites there were no road crossings observed either over or under the road, animals were only foraging or sitting still at these locations, therefore we only have 14 sites where road crossings were observed.
 
 
-# This isn't giving us the results we want, we want to take it down to site level and compare behaviour at the site specific level. Go through hypothesis and ensure the new structure will answer these questions. Want to analyse the data as all animals, kangaroos only, exotic only, and native only 
+# This isn't giving us the results we want, we want to take it down to site level and compare behaviour at the site specific level. Go through hypothesis and ensure the new structure will answer these questions. Want to analyse the data as all animals, kangaroos only, exotic only, and native only. We will then need to standardise for trapping effort, by doubling the number of road crossings. 
 
 
 head(rc3, 3); dim(rc3) # What is the structure of the road characteristics data
@@ -1513,7 +1530,7 @@ beh.site$Rd_typ <- factor(rc$Rd_typ, levels = c("minor", "major")) # Needed to b
 str(beh.site$Rd_typ) # Make sure this looks right
 str(beh.site$Clvt_sz) # Make sure this look right
 beh.site$RC <- 0 # Create a new column for road crossings, and assign 0 to all
-beh.site$RC[which(beh.site$Site %in% unique(beh5$Site))] <- 1 # If there was a road crossing either a culvert or road crossing at a site assign a 1, all other sites that had no crossings will remain 0
+beh.site$RC[which(beh.site$Site %in% unique(beh6$Site))] <- 1 # If there was a road crossing either a culvert or road crossing at a site assign a 1, all other sites that had no crossings will remain 0
 head(beh.site); dim(beh.site) # Check how this looks
 beh.site <- merge(beh.site, rc10, by = "Site", all.x=T, all.y=F) # Merge the two data sets
 head(beh.site); dim(beh.site) # Check how this looks
@@ -1527,8 +1544,8 @@ beh.site <- merge(beh.site, Open, by = "Site", all.x = T, all.y = F) # Merge thi
 head(beh.site) # Check this has worked
 
 
-table(beh5$Site, beh5$Behaviour) # How many animals were observed performing each road crossing behaviour?
-RC <- data.frame(Site = as.numeric(dimnames(table(beh5$Site, beh5$Behaviour))[[1]]), CC = table(beh5$Site, beh5$Behaviour)[,1], RX = table(beh5$Site, beh5$Behaviour)[,2]) # Create a new data frame containing the information for the number of each road crossing behaviour per site. Merge this with beh.site, and change NAs to 0 if there are any
+table(beh6$Site, beh6$Behaviour) # How many animals were observed performing each road crossing behaviour?
+RC <- data.frame(Site = as.numeric(dimnames(table(beh6$Site, beh6$Behaviour))[[1]]), CC = table(beh6$Site, beh6$Behaviour)[,1], RX = table(beh6$Site, beh6$Behaviour)[,2]) # Create a new data frame containing the information for the number of each road crossing behaviour per site. Merge this with beh.site, and change NAs to 0 if there are any
 # Then calculate the proportion of crossings that were under roads, CC/sum(CC+RX), then repeat same process for other groups, use same models below with this new dataset 
 head(RC) # What does the Road crossing data look like
 
@@ -1536,19 +1553,27 @@ head(RC) # What does the Road crossing data look like
 names(RC)[names(RC) == "CC"] <- "All.CC"
 names(RC)[names(RC) == "RX"] <- "All.RX"
 
+
+# Double the number of All.RX to standardise for trapping effort
+RC$All.RX <- round(RC$All.RX*2,)
+RC$All.RX # Has this worked, yes.
+
 beh.site <- merge(beh.site, RC, by = "Site", all.x = T, all.y = F) # Merge this with beh.site
 beh.site[is.na(beh.site)] <- 0 # Replace NA with 0
 head(beh.site); dim(beh.site) # Check how this looks
-beh.site$Prop_RC_clvt <- beh.site[,"All.CC"]/rowSums(beh.site[,c("All.CC","All.RX")]) # Calculate the proportion of road crossings that were under the road - figure out shy this isn't working,, want proportion for all other models
+beh.site$Prop_RC_clvt <- beh.site[,"All.CC"]/rowSums(beh.site[,c("All.CC","All.RX")]) # Calculate the proportion of road crossings that were under the road - figure out why this isn't working,, want proportion for all other models
 head(beh.site,3); dim(beh.site) # Check that this has worked.
 
+
+
+
 # We want to do a two part analysis, the first part to determine what if anything effects any sort of road crossings, the second to look at each site and determine what effected road crossings.  0 = all RC were over top of road. 
-head(beh5) # Check the head of the data
+head(beh6) # Check the head of the data
 beh.site$Prop_RC_clvt[beh.site$RC == 0] <- NA # For all animals when site had no RC at all it is now NA, it is 0 if it was a RX over road surface, and 1 if through a culvert. 
 head(beh.site); dim(beh.site) # Check that this has worked
 
 
-behKang <- beh5[which(beh5$Species %in% "Kangaroo"),] # Create the road crossings data for Kangaroos, first finding where they were observed
+behKang <-beh6[which(beh6$Species %in% "Kangaroo"),] # Create the road crossings data for Kangaroos, first finding where they were observed
 head(behKang) # See how this looks 
 behKang <- tidy.df(data.set = behKang) # Clean up
 RCKang <- data.frame(Site = as.numeric(dimnames(table(behKang$Site, behKang$Behaviour))[[1]]), CC = table(behKang$Site, behKang$Behaviour)[,1], RX = table(behKang$Site, behKang$Behaviour)[,2]) # Create road crossing information
@@ -1556,13 +1581,17 @@ head(RCKang); dim(RCKang) # Check how this looks
 # Rename columns
 names(RCKang)[names(RCKang) == "CC"] <- "Kangaroo.CC"
 names(RCKang)[names(RCKang) == "RX"] <- "Kangaroo.RX"
+# Double the number of road crossings to standardise for trapping effort
+RCKang$Kangaroo.RX <- round(RCKang$Kangaroo.RX*2, 0)
+
+
 beh.site <- merge(beh.site, RCKang, by = "Site", all.x = T, all.y = F)  # Merge with beh.site
 head(beh.site) # Check this worked
 
 beh.site$Prop_Kang_RC_clvt <- beh.site[,"Kangaroo.CC"]/rowSums(beh.site[,c("Kangaroo.CC","Kangaroo.RX")]) # Calculate the propensity for a road crossing 
+ 
 
-
-behExotic <- beh5[which(beh5$Species %in% c("Cat", "Cow", "Dog", "Fox", "Hare")),] # Create the road crossings data for exotics, first finding where they were observed
+behExotic <- beh6[which(beh6$Species %in% c("Cat", "Cow", "Dog", "Fox", "Hare")),] # Create the road crossings data for exotics, first finding where they were observed
 head(behExotic) # See how this looks
 behExotic <- tidy.df(data.set = behExotic) # Clean up
 RCExotic <- data.frame(Site = as.numeric(dimnames(table(behExotic$Site, behExotic$Behaviour))[[1]]), CC = table(behExotic$Site, behExotic$Behaviour)[,1], RX = table(behExotic$Site, behExotic$Behaviour)[,2]) # Create road crossing information
@@ -1570,13 +1599,17 @@ head(RCExotic); dim(RCExotic) # Check how this looks
 # Rename columns
 names(RCExotic)[names(RCExotic) == "CC"] <- "Exotic.CC"
 names(RCExotic)[names(RCExotic) == "RX"] <- "Exotic.RX"
+# Double the number of road crossings
+RCExotic$Exotic.RX <- round(RCExotic$Exotic.RX*2,0)
+
+
 beh.site <- merge(beh.site, RCExotic, by = "Site", all.x = T, all.y = F) # Merge with beh.site
 head(beh.site) # Check this has worked
 
 beh.site$Prop_Exotic_RC_clvt <- beh.site[,"Exotic.CC"]/rowSums(beh.site[,c("Exotic.CC","Exotic.RX")]) # Calculate the propensity for a road crossing
 
 
-behNative <- beh5[which(beh5$Species %in% c("Kangaroo", "Macropod", "Monitor", "Possum", "Whiptail")),] # Create the road crossings data for natives, first finding where they were observed
+behNative <- beh6[which(beh6$Species %in% c("Kangaroo", "Macropod", "Monitor", "Possum", "Whiptail")),] # Create the road crossings data for natives, first finding where they were observed
 head(behNative) # Check how this looks
 behNative <- tidy.df(data.set = behNative) # Clean up
 RCNative <- data.frame(Site = as.numeric(dimnames(table(behNative$Site, behNative$Behaviour))[[1]]), CC = table(behNative$Site, behNative$Behaviour)[,1], RX = table(behNative$Site, behNative$Behaviour)[,2]) # Create the road crossings data
@@ -1584,6 +1617,10 @@ head(RCNative); dim(RCNative) # Check this worked
 # Rename columns
 names(RCNative)[names(RCNative) == "CC"] <- "Native.CC"
 names(RCNative)[names(RCNative) == "RX"] <- "Native.RX"
+# Double the number of road crossings
+RCNative$Native.RX <- round(RCNative$Native.RX*2, 0)
+
+
 beh.site <- merge(beh.site, RCNative, by = "Site", all.x = T, all.y = F) # Merge with beh.site
 head(beh.site) # Check this has worked
 
@@ -1592,7 +1629,7 @@ beh.site$Prop_Native_RC_clvt <- beh.site[,"Native.CC"]/rowSums(beh.site[,c("Nati
 head(beh.site) # Check how this looks, there are NAs as we can only see the first 6 sites and there were no crossings recorded until site 8
 
 
-behSmall <- beh5[which(beh5$Species %in% c("Monitor", "Possum", "Hare", "Rabbit", "Amphibian", "Snake", "Rodent", "Quail", "Dragon", "Cat")),] # Create the road crossings data for small species, first finding where they were observed
+behSmall <- beh6[which(beh6$Species %in% c("Monitor", "Possum", "Hare", "Rabbit", "Amphibian", "Snake", "Rodent", "Quail", "Dragon", "Cat")),] # Create the road crossings data for small species, first finding where they were observed
 head(behSmall)# How does that look
 behSmall <- tidy.df(data.set= behSmall) # Clean up
 RCSmall <- data.frame(Site = as.numeric(dimnames(table(behSmall$Site, behSmall$Behaviour))[[1]]), CC = table(behSmall$Site, behSmall$Behaviour)[,1], RX = table(behSmall$Site, behSmall$Behaviour)[,2]) # Create the road crossings data
@@ -1600,13 +1637,18 @@ head(RCSmall); dim(RCSmall) # Check this worked
 #Rename columns
 names(RCSmall)[names(RCSmall) == "CC"] <- "Small.CC"
 names(RCSmall)[names(RCSmall) == "RX"] <- "Small.RX"
+# Double the number of road crossings
+RCSmall$Small.RX <- round(RCSmall$Small.RX*2, 0)
+
 beh.site <- merge(beh.site, RCSmall, by = "Site", all.x = T, all.y = F) # Merge with beh.site
 head(beh.site) # Check this has worked correctly
 
 beh.site$Prop_Small_RC_clvt <- beh.site[,"Small.CC"]/rowSums(beh.site[,c("Small.CC","Small.RX")]) # Calculate the propensity for a road crossing
 head(beh.site) # Check how this looks
 
-behLarge <- beh5[which(beh5$Species %in% c("Kangaroo", "Macropod", "Whiptail", "Cow","Fox", "Dog","Deer")),] # Create the road crossings data for large species, first finding where they were observed.
+
+
+behLarge <- beh6[which(beh6$Species %in% c("Kangaroo", "Macropod", "Whiptail", "Cow","Fox", "Dog","Deer")),] # Create the road crossings data for large species, first finding where they were observed.
 head(behLarge) # How does that look
 behLarge <- tidy.df(data.set = behLarge) # Clean up
 RCLarge <-  data.frame(Site = as.numeric(dimnames(table(behLarge$Site, behLarge$Behaviour))[[1]]), CC = table(behLarge$Site, behLarge$Behaviour)[,1], RX = table(behLarge$Site, behLarge$Behaviour)[,2]) # Create the road crossings data
@@ -1614,11 +1656,12 @@ head(RCLarge); dim(RCLarge) # Check this worked
 # Rename the columns
 names(RCLarge)[names(RCLarge) == "CC"] <- "Large.CC"
 names(RCLarge)[names(RCLarge) == "RX"] <- "Large.RX"
+# Double the number of road crossings
+RCLarge$Large.RX <- round(RCLarge$Large.RX*2, 0)
+
+
 beh.site <- merge(beh.site, RCLarge, by = "Site", all.x= T, all.y = F) # Merge with beh.site
 head(beh.site) # Check this has worked correctly 
-
-
-boxplot(beh.site$Large.CC, beh.site$Large.RX)
 
 
 beh.site$Prop_Large_RC_clvt <- beh.site[,"Large.CC"]/rowSums(beh.site[,c("Large.CC", "Large.RX")]) # Calculate the propensity for a road crossing
@@ -1649,13 +1692,12 @@ plot(beh.site$Clvt_sz, beh.site$Openness) # Plot this
 cor.test(beh.site$Clvt_wdt, ifelse(beh.site$Clvt_sz == "large", 1,0)) # Correlation of culvert width with culvert size 
 plot(beh.site$Clvt_sz, beh.site$Clvt_wdt) # Plot this
 
-cor.test(beh.site$Length, ifelse(beh.site$Clvt_sz == "large", 1,0)) # Correlation of culvert length with culvert height
+cor.test(beh.site$Length, ifelse(beh.site$Clvt_sz == "large", 1,0)) # Correlation of culvert length with culvert size
 plot(beh.site$Clvt_sz, beh.site$Length) # Plot this
 
-cor.test(ifelse(beh.site$Clvt_sz == "large", 1,0), beh.site$Clvt_ht) 
+cor.test(ifelse(beh.site$Clvt_sz == "large", 1,0), beh.site$Clvt_ht) # Correlation of culvert height with culvert size
 plot(beh.site$Clvt_sz, beh.site$Clvt_ht)# Plot this
 table(beh.site$Site, beh.site$Clvt_sz) # What sizes are the culverts depending on the sites, does this look right? Yes, no issues
-
 
 
 
@@ -1687,15 +1729,15 @@ legend("topleft", legend = "r = 0.68, p <0.001", cex = 1, bty = "n", text.width 
 
 plot(beh.site$Clvt_sz, beh.site$Clvt_ht, xlab = "Culvert size", ylab = "Culvert height (m)", las = 1)
 title(main = "(f)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topleft", legend = "r = 0.62, p <0.001", cex = 1, bty = "n", text.width = 1)
+legend("topleft", legend = "r = 0.82, p <0.001", cex = 1, bty = "n", text.width = 1)
 
 plot(beh.site$Clvt_sz, beh.site$Clvt_wdt, xlab = "Culvert size", ylab = "Culvert width (m)", las = 1)
 title(main = "(g)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topright", legend = "r = -0.20, p = 0.29", cex = 1, bty = "n", text.width = )
+legend("topright", legend = "r = 0.62, p = <0.001", cex = 1, bty = "n", text.width = )
 
 plot(beh.site$Clvt_sz, beh.site$Length, xlab = "Culvert size", ylab = "Culvert Length (m)", las = 1)
 title(main = "(h)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topleft", legend = "r = 0.82, p = <0.001", cex = 1, bty = "n", text.width = 5)
+legend("topleft", legend = "r = -0.20, p = 0.29", cex = 1, bty = "n", text.width = 5)
 
 
 
@@ -1716,11 +1758,11 @@ summary(m_null.2) # Null model
 
 
 m5 <- gam(Prop_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
-summary(m5) # Significant
+summary(m5) # Not significant
 AICc(m_null.2); AICc(m5)
 
 
-AICc(m_null.2); AICc(m5) # Null model is better, 3 points lower than model 5. 
+AICc(m_null.2); AICc(m5) # Null model is better, the lower the value the better
 
 # Kangaroos
 m_null.3 <- gam(Prop_Kang_RC_clvt ~ 1, family = betar(link="logit"), data = beh.site)
@@ -1728,7 +1770,7 @@ summary(m_null.3) # Null model
 
 m6 <- gam(Prop_Kang_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m6) # Not sig.
-AICc(m_null.3); AICc(m6) #m6 is better than the null
+AICc(m_null.3); AICc(m6) #Null model is better
 
 
 # Exotics
@@ -1738,7 +1780,7 @@ summary(m_null.4) # Null model
 
 m7 <- gam(Prop_Exotic_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m7)# Not sig.
-AICc(m_null.4); AICc(m7)
+AICc(m_null.4); AICc(m7) # null model is better
 
 
 # Natives
@@ -1747,7 +1789,7 @@ summary(m_null.5) # Null model
 
 m8 <- gam(Prop_Native_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m8)# Not sig.
-AICc(m_null.5); AICc(m8)
+AICc(m_null.5); AICc(m8) # Null model is better
 
 
 # Small species
@@ -1757,7 +1799,7 @@ summary(m_null.6) # Null model
 
 m9 <- gam(Prop_Small_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m9)# Not sig.
-AICc(m_null.6); AICc(m9)
+AICc(m_null.6); AICc(m9) # Null model is better
 
 
 # Large species
@@ -1766,8 +1808,8 @@ m_null.7 <- gam(Prop_Large_RC_clvt ~ 1, family = betar(link="logit"), data = beh
 summary(m_null.7) # Null model
 
 m10 <- gam(Prop_Large_RC_clvt ~ Clvt_sz, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
-summary(m10)# Significant influence of large culverts on large species crossings
-AICc(m_null.7); AICc(m10)
+summary(m10)# Not significant
+AICc(m_null.7); AICc(m10) # Null model is better
 
 
 
@@ -1849,13 +1891,13 @@ legend("topleft", legend = "r = 0.97, p = <0.001", cex = 1, bty = "n", text.widt
 # All animals
 m11 <- gam(Prop_RC_clvt ~ Vegmean, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m11) # Not sig.
-AICc(m_null.2); AICc(m11)
+AICc(m_null.2); AICc(m11) # null model is better
 
 # Kangaroos
 
 m12 <- gam(Prop_Kang_RC_clvt ~ Vegmean, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m12) # Not sig.
-AICc(m_null.3); AICc(m12)
+AICc(m_null.3); AICc(m12) # Null model is better
 
 
 
@@ -1863,69 +1905,77 @@ AICc(m_null.3); AICc(m12)
 
 m13 <- gam(Prop_Exotic_RC_clvt ~ Vegmean, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m13)# Not sig.
-AICc(m_null.4); AICc(m13)
-
+AICc(m_null.4); AICc(m13) # Null model is better
 
 
 
 # Natives
 m14 <- gam(Prop_Native_RC_clvt ~ Vegmean, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m14)# Not sig.
-AICc(m_null.5); AICc(m14)
+AICc(m_null.5); AICc(m14) # null model is better
 
 
 # Small species
 
 m15 <- gam(Prop_Small_RC_clvt ~ Vegmean, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
-summary(m15)# Not sig.
-AICc(m_null.6); AICc(m15)
+summary(m15)# Significant influence of higher average vegetation density
+AICc(m_null.6); AICc(m15) # Null model is still better
 
 
 
 # Large species 
 m16 <- gam(Prop_Large_RC_clvt ~ Vegmean, data = beh.site[which(beh.site$RC == 1),], family = betar(link="logit"))
 summary(m16)# Not sig.
-AICc(m_null.7); AICc(m16)
+AICc(m_null.7); AICc(m16) # Null model is better
 
 
 
-# Model selection framework information
+# Model selection framework information - smaller AICc the better it is (more negative). Culvert size was first then vegetation
 #All animals
 AICc(m_null.2); AICc(m5); AICc(m11) # Null model is best
+logLik.gam(m_null.2)
 logLik.gam(m11)
 logLik.gam(m5)
-logLik.gam(m_null.2)
+
 
 
 # Exotic species
 AICc(m_null.4); AICc(m7); AICc(m13) #Null model is best
+logLik.gam(m_null.4)
 logLik.gam(m13)
 logLik.gam(m7)
-logLik.gam(m_null.4)
+
+
+
 
 # Native species
 AICc(m_null.5); AICc(m8); AICc(m14) # Null model is best
+logLik.gam(m_null.5)
 logLik.gam(m14)
 logLik.gam(m8)
-logLik.gam(m_null.5)
+
 
 
 # Kangaroos
 AICc(m_null.3); AICc(m6); AICc(m12) #Null model is best
+logLik.gam(m_null.3)
 logLik.gam(m6)
 logLik.gam(m12)
-logLik.gam(m_null.3)
+
+
 
 # Small species
 AICc(m_null.6); AICc(m9); AICc(m15) #Null model is best
+logLik.gam(m_null.6)
 logLik.gam(m15)
 logLik.gam(m9)
-logLik.gam(m_null.6)
+
 
 
 # Large species
 AICc(m_null.7); AICc(m10); AICc(m16) # Null model is best
-logLik.gam(m16)
-logLik.gam(m10)
 logLik.gam(m_null.7)
+logLik.gam(m10)
+logLik.gam(m16)
+
 
