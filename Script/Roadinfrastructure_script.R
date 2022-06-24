@@ -854,9 +854,9 @@ lines(prM4b$Veg_dense[prM4b$Type=="R"], prM4b$uci[prM4b$Type=="R"], lty = 2, col
 title(main = "(b) Native species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
 
 
-plot(c(1,2), prM17$fit[c(1,3)], pch = 20, ylim=c(0,1), xlim=c(0.5,2.5), xlab = "Camera position", ylab = "Probability of occurrence", type = "p", xaxt="n")
+plot(c(1,2), prM17$fit[c(1,3)], pch = 20, ylim=c(0,1), xlim=c(0.5,2.5), xlab = "Camera position", ylab = "Probability of occurrence", type = "p", xaxt="n", col = c("black", "red"))
 axis(side=1, at=c(1,2), labels=c("culvert","road"))
-arrows(c(1,2), prM17$lci[c(1,3)], c(1,2), prM17$uci[c(1,3)], length = 0.05, code=3, angle=90)
+arrows(c(1,2), prM17$lci[c(1,3)], c(1,2), prM17$uci[c(1,3)], length = 0.05, code=3, angle=90, col = c("black", "red"))
 title(main = "(c) Small species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
 
 plot(c(1,2), prM15a$fit[c(1,3)], pch = 20, ylim=c(0,1), xlim=c(0.5,2.5), xlab = "Culvert size", ylab = "Probability of occurrence", type = "p", xaxt="n")
@@ -873,7 +873,7 @@ par(xpd=F)
 
 
 
-# Plots for supplementary material - interactive models that were better than the null model and within AICc2 of the additive model. 
+# Plots for supplementary material - interactive models that were better than the null model and within AICc2 of the additive model 
 dev.new(width=12, height=10, dpi=80, pointsize=18, noRStudioGD = T)
 par(mfrow=c(2,2), mgp=c(2.5,1,0), mar=c(4,4,2,2), oma=c(0,0,0,6), cex = 1, las =1)
 
@@ -909,7 +909,13 @@ par(xpd=NA)
 legend(x=3.6, y=1, legend=c("Culvert", "Road"), col=c("black", "red"), lty=1, lwd=0.5, cex=1, bty="n", text.width=0.2)
 par(xpd=F)
 
-
+plot(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$fit[prM16b$Type=="C"], pch = 20, ylim=c(0, 1), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type = "l", las = 1)
+lines(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$lci[prM16b$Type=="C"], lty = 2)
+lines(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$uci[prM16b$Type=="C"], lty = 2)
+lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$fit[prM16b$Type=="R"], lty = 1, col = "red")
+lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$lci[prM16b$Type=="R"], lty = 2, col = "red")
+lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$uci[prM16b$Type=="R"], lty = 2, col = "red")
+title(main = "(d) Small species", outer = F, adj =0, cex.main = 1, line = 0.3, font.main = 1)
 
 
 
