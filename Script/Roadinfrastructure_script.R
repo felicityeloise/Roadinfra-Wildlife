@@ -106,6 +106,13 @@ length(unique(rc$Veg_hgt_R2_pt2))
 length(unique(rc$Veg_hgt_R2_pt3))
 table(rc$Site, rc$Clvt_sz)
 
+# Load required packages
+library(mgcv)
+library(dplyr)
+library(tidyr)
+library(lmerTest) 
+library(lme4)
+library(AICcmodavg)
 
 
 
@@ -125,62 +132,7 @@ sum(dat$All_animals[dat$Type == "R"]) # How many animals were seen on Road camer
 
 summary(lm(dat$All_animals~dat$Type)) # The distribution of the residuals of this model are not symmetrical, this is likely due to the zero-inflation of the data. This model suggests that there is a statistically significant difference between the numbers of animals observed on culvert cameras, although not on road cameras. 
 
-## Accounting for zero inflation - preliminary look at occurrence data
-# Load required packages
-library(lattice)
-library(MASS)
-library(pscl)
-library(lmtest)
-library(mgcv)
 
-# Poisson GLM
-m1 <- glm(All_animals ~ Type, family = 'poisson', data = dat)
-summary(m1)
-# Check of over/underdispersion in the model
-E2 <- resid(m1, type = "pearson")
-N <- nrow(dat)
-p <- length(coef(m1))
-sum(E2^2)/(N-p)
-# This model is definitely overdispersed 
-
-
-# Negative Binomial GLM
-m2 <- glm.nb(All_animals ~ Type, data = dat)
-summary(m2)
-# Dispersion statistic
-E2 <- resid(m2, type = "pearson")
-N <- nrow(dat)
-p <- length(coef(m2)) + 1
-sum(E2^2)/(N-p)
-# Still overdispersed but much closer to normal than poisson glm
-
-
-# Zero-inflated Poisson GLM
-m3 <- zeroinfl(All_animals ~ Type |
-                 Type, 
-               dist = 'poisson',
-               data = dat)
-summary(m3)
-# Dispersion statistic
-E2 <- resid(m3, type = "pearson")
-N <- nrow(dat)
-p <- length(coef(m3))
-sum(E2^2) / (N - p)
-# More overinflated than negative binomial
-
-
-# Zero-inflated negative binomial glm - appropriate 
-m4 <- zeroinfl(All_animals ~ Type |
-                 Type,
-               dist = 'negbin',
-               data = dat)
-summary(m4)
-# Dispersion statistic
-E2 <- resid(m4, type = "pearson")
-N <- nrow(dat)
-p <- length(coef(m4)) + 1
-sum(E2^2) / (N - p)
-# Slightly higher overinflation than the negative binomial glm that did not take into account the zero inflation
 
 
 
@@ -256,7 +208,7 @@ hist(dat$Exotic[dat$Exotic<50]) # Zero inflation
 hist(dat$Native[dat$Native<50])
 hist(dat$Large[dat$Large<50]) # Zero inflation
 hist(dat$Small[dat$Small<50])# Zero inflation
-# The data is zero inflated, need to determine what R model to use for poisson
+# The data is zero inflated, need to determine what R model to use
 # Could use binomial glm - turn the count data into presence/absence data
 
 # Turn count data into presence/absence data
@@ -336,8 +288,7 @@ head(rc) # Ensure that this has worked
 # Create a new data frame with this data in it
 rc3 <- rc[,c("Site", "C1", "C2", "C3", "C4", "R1", "R2")] 
 head(rc3); dim(rc3) # Check this worked, there are only 30 sites
-library(dplyr)
-library(tidyr)
+
 rc3 <- rc3 %>% mutate_if(is.numeric, round, digits=2)
 rc4 <- gather(rc3, key = "Cam_pt", value = "Veg_dense", "C1", "C2", "C3", "C4", "R1", "R2")
 rc4 # Take a look and ensure this is correct
@@ -370,16 +321,12 @@ head(dat2); dim(dat2)
 
 
 rc7 <- rc[,c("Site", "Length", "Clvt_ht")] # Create a new data frame with just the site, length,and Clvt_ht of the culvert
-dat2 <- merge(dat2, rc7, by = "Site", all.x = T, all.y = F) # Merge this with beh4 but create a new data set 
+dat2 <- merge(dat2, rc7, by = "Site", all.x = T, all.y = F) # Merge this with dat2 but create a new data set 
 
 # Models with type are better than those that exclude it - explore occurrence data to determine what environmental variables influence species presence/absence
 head(dat2);dim(dat2) # Look at the first few rows of data
-citation("lme4")
 
-# Load packages
-library(lmerTest) 
-library(lme4)
-library(AICcmodavg)
+
 
 str(dat2) # Need to fix some issues with variables
 dat2$Veg_cov <- factor(dat2$Veg_cov, levels = c("none", "low", "medium", "high")) # Reorder veg_cov
@@ -392,14 +339,14 @@ table(dat2$Length, dat2$Site) # I want to look at Road type compared to length
 Site <- 1:30
 Road <- data.frame(Site)
 Road$Rd_typ <- c(rep("major", 2), rep("minor", 1), rep("major", 3), rep("minor", 2), rep("major", 16), rep("minor", 3), rep("major", 3))
-Road$Length <- c(rep("8.15", 1), rep("8.4",1), rep("7.1",1), rep("9.65", 1), rep("7.95", 1), rep("10",1), rep("11.05",1), rep("11.1",1), rep("7.3",1), rep("9.25",1), rep("9.55",1), rep("9.85",1), rep("9.35",1), rep("9.75",1), rep("7.15",1), rep("12.1",1), rep("9.9",1), rep("9.35",1), rep("11.2",1), rep("7,4",1), rep("6.65",1), rep("14.8",1), rep("9.8",1), rep("9.35",1), rep("12.6",1), rep("8.9",1), rep("9.3",1), rep("10.6",1), rep("12.9",1), rep("11.25",1)) # Need to do this otherwise it wasn't odering correctly
+Road$Length <- c(rep("8.15", 1), rep("8.4",1), rep("7.1",1), rep("9.65", 1), rep("7.95", 1), rep("10",1), rep("11.05",1), rep("11.1",1), rep("7.3",1), rep("9.25",1), rep("9.55",1), rep("9.85",1), rep("9.35",1), rep("9.75",1), rep("7.15",1), rep("12.1",1), rep("9.9",1), rep("9.35",1), rep("11.2",1), rep("7,4",1), rep("6.65",1), rep("14.8",1), rep("9.8",1), rep("9.35",1), rep("12.6",1), rep("8.9",1), rep("9.3",1), rep("10.6",1), rep("12.9",1), rep("11.25",1)) # Need to do this otherwise it wasn't ordering correctly
 table(Road$Length, Road$Rd_typ) # Minor roads are not necessarily narrower roads or roads with shorter culverts, some major roads have shorter culverts on narrower roads. Road type isn't really a great indicator for road size in this instance.
 
 
 # Before jumping into analysis, as there are many variables, lets first look for correlations to simplify the model set. We are really interested in how vegetation may influence culvert use.
 head(dat)
 
-cor.test(dat2$Length, dat2$Veg_dense) # Correlated, more veg dense on wider rd
+cor.test(dat2$Length, dat2$Veg_dense) # Correlated, more veg dense on wider road
 # road length and vegetation density were correlated (r = 0.23, p = 0.001)
 rl <- lmer(Veg_dense ~ Length + (1 |Site), data = dat2)
 summary(rl) # Summarise the relationship between veg dense and length
@@ -408,7 +355,7 @@ plot(dat2$Length, dat2$Veg_dense) # How does this look as a plot
 # NOTE - Vegetation cover was no longer included as we preferred to use the numerical version of vegetation measurements - vegetation density
 
 cor.test(ifelse(dat2$Rd_typ== "major",1,0), dat2$Veg_dense) # Check correlation of veg dense with rd type
-summary(lm(Veg_dense ~ Rd_typ, data = dat2)) # Relationship between veg dense and road type (not going to be included in the thesis as these are not the results we expect)
+summary(lm(Veg_dense ~ Rd_typ, data = dat2)) # Relationship between veg dense and road type - road type isn't really giving us the information that we are wanting, we will just stick with road width/culvert length
 
 
 summary(lm(Veg_dense ~ Length, data = dat2)) # Relationship between veg dense and road width 
@@ -434,26 +381,12 @@ cor.test(ifelse(dat2$Clvt_sz == "large",1,0), ifelse(dat2$Rd_typ == "major", 1,0
 
 
 
-## Create the plots for appendix to show correlations with culvert size
-dev.new(width=20, height=20, dpi=80, pointsize=28, noRStudioGD = T)
-par(mfrow=c(2,2), mgp=c(2.5,1,0), mar=c(4,4,3,3), cex = 1, las = 1)
 
-plot(dat2$Clvt_sz, dat2$Veg_dense, xlab = "Culvert size", ylab = "Vegetation density (m)", las = 1)
-title(main = "(a)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("top", legend = "r = 0.037,
-p = 0.62", cex = 1, bty = "n", text.width = 1)
-
-plot(dat2$Clvt_sz, dat2$Length, xlab = "Culvert size", ylab = "Road width/Culvert length (m)", las = 1)
-title(main = "(b)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topleft", legend = "r = 0.024, p = 0.74", cex = 1, bty = "n", text.width = 1)
-
-
-
-## Create the plots for appendix to show correlations with Vegetation density
+## Create the plots for appendix for the occurrence data
 dev.new(width=20, height=20, dpi=80, pointsize=28, noRStudioGD= T)
 par(mfrow=c(2, 2), mgp=c(2.5,1,0), mar=c(4,4,3,3), cex = 1, las = 1)
 
-plot(dat2$Length, dat2$Veg_dense, xlab = "Culvert length (m)", ylab = "Vegetation density (m)", las = 1) # As vegetation density increases so do length
+plot(dat2$Length, dat2$Veg_dense, xlab = "Culvert length (m)", ylab = "Vegetation density (m)", las = 1) # As vegetation density increases so does length
 title(main = "(a)", outer = F, adj = 0, cex.main = 1, line = 0.3)
 legend("topleft", legend = "r = 0.23, p = 0.001", cex = 1, bty ="n", text.width = 1)
 
@@ -471,7 +404,7 @@ legend("topleft", legend = "r = 0.02, p = 0.74", cex = 1, bty = "n", text.width 
 
 
 
-# Model the probability of observing an animal in relation to vegetation density
+# Model the probability of observing an exotic animal in relation to vegetation density
 Mnull <- glmer(Exotic.pa ~ 1 + (1 | Site), family = "binomial", data = dat2)
 summary(Mnull) # Model if nothing is occurring
 
@@ -525,37 +458,6 @@ summary(M3b)
 logLik(M3b)
 
 
-# Predict from the interactive model
-ndM3 <- data.frame(Type = as.factor(c(rep("C", 2), rep("R", 2))), Clvt_sz = as.factor(c(rep("small", 2), rep("large", 2))))
-prM3 <- predictSE(mod = M3, newdata = ndM3, se.fit = T, type = "response")
-prM3 <- data.frame(ndM3, fit = round(prM3$fit, 4), se = round(prM3$se.fit, 4))
-prM3$lci <- prM3$fit - (prM3$se * 1.96)
-prM3$uci <- prM3$fit + (prM3$se * 1.96)
-
-# Plot predictions from the interactive model
-plot(prM3$Clvt_sz[prM3$Type=="C"], prM3$fit[prM3$Type=="C"], pch=20, ylim=c(min(prM3$lci), max(prM3$uci)), xlab = "Culvert size", ylab = "Prob. of occurrence", type="b")
-points(prM3$Clvt_sz[prM3$Type=="C"], prM3$lci[prM3$Type=="C"], lty=2)
-points(prM3$Clvt_sz[prM3$Type=="C"], prM3$uci[prM3$Type=="C"], lty=2)
-points(prM3$Clvt_sz[prM3$Type=="R"], prM3$fit[prM3$Type=="R"], lty=1, col="red")
-points(prM3$Clvt_sz[prM3$Type=="R"], prM3$lci[prM3$Type=="R"], lty=2, col="red")
-points(prM3$Clvt_sz[prM3$Type=="R"], prM3$uci[prM3$Type=="R"], lty=2, col="red")
-
-
-
-# Predict from the additive model
-ndM3b <- data.frame(Type = as.factor(c(rep("C", 2), rep("R", 2))), Clvt_sz = as.factor(c(rep("small", 2), rep("large", 2))))
-prM3b <- predictSE(mod = M3b, newdata = ndM3b, se.fit = T, type = "response")
-prM3b <- data.frame(ndM3b, fit = round(prM3b$fit, 4), se = round(prM3b$se.fit, 4))
-prM3b$lci <- prM3b$fit - (prM3b$se * 1.96)
-prM3b$uci <- prM3b$fit + (prM3b$se * 1.96)
-
-# Plot predictions from additive model
-plot(prM3b$Clvt_sz[prM3b$Type=="C"], prM3b$fit[prM3b$Type=="C"], pch=20, ylim=c(min(prM3b$lci), max(prM3b$uci)), xlab = "Culvert size", ylab = "Prob. of occurrence", type="b")
-points(prM3b$Clvt_sz[prM3b$Type=="C"], prM3b$lci[prM3b$Type=="C"], lty=2)
-points(prM3b$Clvt_sz[prM3b$Type=="C"], prM3b$uci[prM3b$Type=="C"], lty=2)
-points(prM3b$Clvt_sz[prM3b$Type=="R"], prM3b$fit[prM3b$Type=="R"], lty=1, col="red")
-points(prM3b$Clvt_sz[prM3b$Type=="R"], prM3b$lci[prM3b$Type=="R"], lty=2, col ="red")
-points(prM3b$Clvt_sz[prM3b$Type=="R"], prM3b$uci[prM3b$Type=="R"], lty=2, col ="red")
 
 AICc(Mnull); AICc(M3); AICc(M3a); AICc(M3b) # Null model is better, but M3a the size only model is second best
 
@@ -579,21 +481,6 @@ summary(M4) # Produce interactive model, Significant
 #What is the Log Likelihood of this model?
 logLik(M4)
 
-# Predict from this interactive model
-ndM4 <- data.frame(Type = as.factor(c(rep("C", 50), rep("R", 50))), Veg_dense = seq(min(dat2$Veg_dense), max(dat2$Veg_dense), length.out = 50))
-prM4 <- predictSE(mod = M4, newdata = ndM4, se.fit = T, type = "response")
-prM4 <- data.frame(ndM4, fit = round(prM4$fit, 4), se = round(prM4$se.fit, 4))
-prM4$lci <- prM4$fit - (prM4$se * 1.96)
-prM4$uci <- prM4$fit + (prM4$se * 1.96)
-
-# Plot predictions from interactive model
-plot(prM4$Veg_dense[prM4$Type=="C"], prM4$fit[prM4$Type=="C"], pch=20, ylim=c(min(prM4$lci), max(prM4$uci)), xlab = "Veg. density", ylab = "Prob. of occurrence", type="l")
-lines(prM4$Veg_dense[prM4$Type=="C"], prM4$lci[prM4$Type=="C"], lty=2)
-lines(prM4$Veg_dense[prM4$Type=="C"], prM4$uci[prM4$Type=="C"], lty=2)
-lines(prM4$Veg_dense[prM4$Type=="R"], prM4$fit[prM4$Type=="R"], lty=1, col="red")
-lines(prM4$Veg_dense[prM4$Type=="R"], prM4$lci[prM4$Type=="R"], lty=2, col ="red")
-lines(prM4$Veg_dense[prM4$Type=="R"], prM4$uci[prM4$Type=="R"], lty=2, col ="red")
-title(main = "(b) Native species", outer = F, adj = 0, cex.main = 1, line = 0.3)
 
 M4a <- glmer(Native.pa ~ Veg_dense + (1 | Site), family = "binomial", data = dat2)
 summary(M4a) # Model veg dense only
@@ -608,36 +495,11 @@ summary(M4b) # Produce additive model, Significant
 logLik(M4b)
 
 
-# Predict from additive model
-ndM4b <- data.frame(Type = as.factor(c(rep("C", 50), rep("R", 50))), Veg_dense = seq(min(dat2$Veg_dense), max(dat2$Veg_dense), length.out = 50))
-prM4b <- predictSE(mod = M4b, newdata = ndM4b, se.fit = T, type = "response")
-prM4b <- data.frame(ndM4b, fit = round(prM4b$fit, 4), se = round(prM4b$se.fit, 4))
-prM4b$lci <- prM4b$fit - (prM4b$se * 1.96)
-prM4b$uci <- prM4b$fit + (prM4b$se * 1.96)
-head(prM4b)
-
-# Plot predictions from this model
-plot(prM4b$Veg_dense[prM4b$Type=="C"], prM4b$fit[prM4b$Type=="C"], pch=20, ylim=c(min(prM4b$lci), max(prM4b$uci)), xlab = "Veg. density", ylab = "Prob. of occurrence", type="l")
-lines(prM4b$Veg_dense[prM4b$Type=="C"], prM4b$lci[prM4b$Type=="C"], lty=2)
-lines(prM4b$Veg_dense[prM4b$Type=="C"], prM4b$uci[prM4b$Type=="C"], lty=2)
-lines(prM4b$Veg_dense[prM4b$Type=="R"], prM4b$fit[prM4b$Type=="R"], lty=1, col="red")
-lines(prM4b$Veg_dense[prM4b$Type=="R"], prM4b$lci[prM4b$Type=="R"], lty=2, col ="red")
-lines(prM4b$Veg_dense[prM4b$Type=="R"], prM4b$uci[prM4b$Type=="R"], lty=2, col ="red")
-
-
-anova(Mnull.1, M4) # Significant
-
-
 M5 <- glmer(Native.pa ~ Type + (1|Site), family = "binomial", data = dat2)
 summary(M5) # Model type only, it is significant although the AIC is not within 2 of the other two models
 #What is the Log Likelihood of this model?
-logLik(M5)
-
-
-# Native species are negatively influence by culvert cameras to a significant degree (P=7.35e-05), and positively influenced by road cameras to a significant degree (P=0.0399). Therefore native species have a higher probability of being observed on road cameras than on culvert cameras. Native species, like exotic species, are not approaching and hanging around culverts, increasing the probability of their observations on road cameras. 
+logLik(M5) 
 AICc(Mnull.1); AICc(M5) # Better than null
-
-AICc(Mnull.1); AICc(M4); AICc(M4a); AICc(M4b); AICc(M5) # M4b is best then M5, better than null and type only
 
 
 M6 <- glmer(Native.pa ~ Type * Clvt_sz + (1 | Site), family = "binomial", data = dat2)
@@ -657,79 +519,29 @@ summary(M6b)
 #What is the Log Likelihood of this model?
 logLik(M6b)
 
-# Predict from interactive model
-ndM6 <- data.frame(Type = as.factor(c(rep("C", 2), rep("R", 2))), Clvt_sz = as.factor(c(rep("small", 2), rep("large", 2))))
-prM6 <- predictSE(mod = M6, newdata = ndM6, se.fit = T, type = "response")
-prM6 <- data.frame(ndM6, fit = round(prM6$fit, 4), se = round(prM6$se.fit, 4))
-prM6$lci <- prM6$fit - (prM6$se * 1.96)
-prM6$uci <- prM6$fit + (prM6$se * 1.96)
 
-# Plot predictions from this model
-plot(prM6$Clvt_sz[prM6$Type=="C"], prM6$fit[prM6$Type=="C"], pch=20, ylim=c(min(prM6$lci), max(prM6$uci)), xlab = "Culvert size", ylab = "Prob. of occurrence", type = "b")
-points(prM6$Clvt_sz[prM6$Type=="C"], prM6$lci[prM6$Type=="C"], lty=2)
-points(prM6$Clvt_sz[prM6$Type=="C"], prM6$uci[prM6$Type=="C"], lty=2)
-points(prM6$Clvt_sz[prM6$Type=="R"], prM6$fit[prM6$Type=="R"], lty=1, col="red")
-points(prM6$Clvt_sz[prM6$Type=="R"], prM6$lci[prM6$Type=="R"], lty=2, col="red")
-points(prM6$Clvt_sz[prM6$Type=="R"], prM6$uci[prM6$Type=="R"], lty=2, col="red")
-
-
-# Predict from the additive model
-ndM6b <- data.frame(Type = as.factor(c(rep("C", 2), rep("R", 2))), Clvt_sz = as.factor(c(rep("small", 2), rep("large", 2))))
-prM6b <- predictSE(mod = M6b, newdata = ndM6b, se.fit = T, type = "response")
-prM6b <- data.frame(ndM6b, fit = round(prM6b$fit, 4), se = round(prM6b$se.fit, 4))
-prM6b$lci <- prM6b$fit - (prM6b$se * 1.96)
-prM6b$uci <- prM6b$fit + (prM6b$se * 1.96)
-
-# Plot predictions from this model
-plot(prM6b$Clvt_sz[prM6b$Type=="C"], prM6b$fit[prM6b$Type=="C"], pch = 20, ylim=c(min(prM6b$lci), max(prM6b$uci)), xlab = "Culvert size", ylab = "Prob. of occurrence", type = "b")
-points(prM6b$Clvt_sz[prM6b$Type=="C"], prM6b$lci[prM6b$Type=="C"], lty=2)
-points(prM6b$Clvt_sz[prM6b$Type=="C"], prM6b$uci[prM6b$Type=="C"], lty=2)
-points(prM6b$Clvt_sz[prM6b$Type=="R"], prM6b$fit[prM6b$Type=="R"], lty=1, col="red")
-points(prM6b$Clvt_sz[prM6b$Type=="R"], prM6b$lci[prM6b$Type=="R"], lty=2, col="red")
-points(prM6b$Clvt_sz[prM6b$Type=="R"], prM6b$uci[prM6b$Type=="R"], lty=2, col="red")
-
-AICc(Mnull.1); AICc(M6); AICc(M6a); AICc(M6b) # The additive model is the best model, and is an improvement on the null model
-
-
-# Native species are significantly more likely to be observed at road cameras in proximity to large culverts than on culvert cameras at large culverts.Although as height increases, observation do slightky increase. 
-
-AICc(Mnull.1); AICc(M4); AICc(M4a); AICc(M4b); AICc(M5); AICc(M6); AICc(M6a); AICc(M6b) # Null model is best, M1a is best model for veg dense which is quite similar to the type only model
+# Best model overall?
+AICc(Mnull.1); AICc(M4); AICc(M4a); AICc(M4b); AICc(M5); AICc(M6); AICc(M6a); AICc(M6b) # M4b is the best model, Vegetation density additive model
 
 cand.set <- list(Mnull.1,M4,M4a, M4b, M5, M6, M6a, M6b)
 
 aictab(cand.set)
 
+# Predict from Model 4b
+ndM4b <- data.frame(Type = as.factor(c(rep("C", 50), rep("R", 50))), Veg_dense = seq(min(dat2$Veg_dense), max(dat2$Veg_dense), length.out = 50))
+prM4b <- predictSE(mod = M4b, newdata = ndM4b, se.fit = T, type = "response")
+prM4b <- data.frame(ndM4b, fit = round(prM4b$fit, 4), se = round(prM4b$se.fit, 4))
+prM4b$lci <- prM4b$fit - (prM4b$se * 1.96)
+prM4b$uci <- prM4b$fit + (prM4b$se * 1.96)
+head(prM4b)
 
-# Plots for thesis
-dev.new(width=12, height=10, dpi=80, pointsize=20, noRStudioGD = T)
-par(mfrow=c(2, 2), mgp=c(2.5,1,0), mar=c(4,4,2,2), oma=c(0,0,0,6), cex = 1, las = 1)
-
-plot(prM4$Veg_dense[prM4$Type=="C"], prM4$fit[prM4$Type=="C"], pch=20, ylim=c(min(prM4$lci), max(prM4$uci)), xlab = "Veg. density", ylab = "Prob. of occurrence", type="l")
-lines(prM4$Veg_dense[prM4$Type=="C"], prM4$lci[prM4$Type=="C"], lty=2)
-lines(prM4$Veg_dense[prM4$Type=="C"], prM4$uci[prM4$Type=="C"], lty=2)
-lines(prM4$Veg_dense[prM4$Type=="R"], prM4$fit[prM4$Type=="R"], lty=1, col="red")
-lines(prM4$Veg_dense[prM4$Type=="R"], prM4$lci[prM4$Type=="R"], lty=2, col ="red")
-lines(prM4$Veg_dense[prM4$Type=="R"], prM4$uci[prM4$Type=="R"], lty=2, col ="red")
-
-plot(prM4b$Veg_dense[prM4b$Type=="C"], prM4b$fit[prM4b$Type=="C"], pch=20, ylim=c(min(prM4b$lci), max(prM4b$uci)), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type="l", las = 1)
+# Plot predictions from this model
+plot(prM4b$Veg_dense[prM4b$Type=="C"], prM4b$fit[prM4b$Type=="C"], pch=20, ylim=c(min(prM4b$lci), max(prM4b$uci)), xlab = "Veg. density", ylab = "Prob. of occurrence", type="l")
 lines(prM4b$Veg_dense[prM4b$Type=="C"], prM4b$lci[prM4b$Type=="C"], lty=2)
 lines(prM4b$Veg_dense[prM4b$Type=="C"], prM4b$uci[prM4b$Type=="C"], lty=2)
 lines(prM4b$Veg_dense[prM4b$Type=="R"], prM4b$fit[prM4b$Type=="R"], lty=1, col="red")
 lines(prM4b$Veg_dense[prM4b$Type=="R"], prM4b$lci[prM4b$Type=="R"], lty=2, col ="red")
 lines(prM4b$Veg_dense[prM4b$Type=="R"], prM4b$uci[prM4b$Type=="R"], lty=2, col ="red")
-
-plot(prM6b$Clvt_sz[prM6b$Type=="C"], prM6b$fit[prM6b$Type=="C"], pch = 20, ylim=c(min(prM6b$lci), max(prM6b$uci)), xlab = "Culvert size", ylab = "Prob. of occurrence", type = "b")
-points(prM6b$Clvt_sz[prM6b$Type=="C"], prM6b$lci[prM6b$Type=="C"], lty=2)
-points(prM6b$Clvt_sz[prM6b$Type=="C"], prM6b$uci[prM6b$Type=="C"], lty=2)
-points(prM6b$Clvt_sz[prM6b$Type=="R"], prM6b$fit[prM6b$Type=="R"], lty=1, col="red")
-points(prM6b$Clvt_sz[prM6b$Type=="R"], prM6b$lci[prM6b$Type=="R"], lty=2, col="red")
-points(prM6b$Clvt_sz[prM6b$Type=="R"], prM6b$uci[prM6b$Type=="R"], lty=2, col="red")
-
-par(xpd=NA)
-legend(x=6.5, y=1,legend =c("Culvert", "Road"), col = c("black", "red"), lty=1, lwd =1, cex = 1, bty ="n", text.width = 0.2)
-par(xpd=F) # just make note this model isn't very good - something else going on as well, good for low veg but not for high, we can see there is an effect at low vegetation densities but not at high, whereas the additive model displays that the effect of vegetation and position is separate, overall more animals observed at roads than culverts but also high occurrences at low densities , additive - effect of veg and position 
-
-
 
 
 # For Kangaroo p/a 
@@ -792,7 +604,7 @@ summary(M9b)
 #What is the Log Likelihood of this model?
 logLik(M9b)
 
-AICc(Mnull.2); AICc(M7); AICc(M7a); AICc(M7b); AICc(M8); AICc(M9); AICc(M9a); AICc(M9b) # Null model is best, 
+AICc(Mnull.2); AICc(M7); AICc(M7a); AICc(M7b); AICc(M8); AICc(M9); AICc(M9a); AICc(M9b) # Null model is best.
 
 cand.set <- list(Mnull.2,M7,M7a, M7b, M8, M9, M9a, M9b)
 
@@ -811,21 +623,6 @@ summary(M10) # Produce interactive model, Significant
 #What is the Log Likelihood of this model?
 logLik(M10)
 
-# Predict from this interactive model
-ndM10 <- data.frame(Type = as.factor(c(rep("C", 50), rep("R", 50))), Veg_dense = seq(min(dat2$Veg_dense), max(dat2$Veg_dense), length.out = 50))
-prM10 <- predictSE(mod = M10, newdata = ndM10, se.fit = T, type = "response")
-prM10 <- data.frame(ndM10, fit = round(prM10$fit, 4), se = round(prM10$se.fit, 4))
-prM10$lci <- prM10$fit - (prM10$se * 1.96)
-prM10$uci <- prM10$fit + (prM10$se * 1.96)
-
-# Plot predictions from interactive model
-plot(prM10$Veg_dense[prM10$Type=="C"], prM10$fit[prM10$Type=="C"], pch=20, ylim=c(min(prM10$lci), max(prM10$uci)), xlab = "Veg. density", ylab = "Prob. of occurrence", type="l")
-lines(prM10$Veg_dense[prM10$Type=="C"], prM10$lci[prM10$Type=="C"], lty=2)
-lines(prM10$Veg_dense[prM10$Type=="C"], prM10$uci[prM10$Type=="C"], lty=2)
-lines(prM10$Veg_dense[prM10$Type=="R"], prM10$fit[prM10$Type=="R"], lty=1, col="red")
-lines(prM10$Veg_dense[prM10$Type=="R"], prM10$lci[prM10$Type=="R"], lty=2, col ="red")
-lines(prM10$Veg_dense[prM10$Type=="R"], prM10$uci[prM10$Type=="R"], lty=2, col ="red")
-
 
 M10a <- glmer(All_animals.pa ~ Veg_dense + (1|Site), family = "binomial", data = dat2)
 summary(M10a) # Produce veg dense only model
@@ -836,24 +633,6 @@ M10b <- glmer(All_animals.pa ~ Type + Veg_dense + (1|Site), family = "binomial",
 summary(M10b) # Produce additive model, Significant
 #What is the Log Likelihood of this model?
 logLik(M10b)
-
-# Predict from the additive model
-ndM10b <- data.frame(Type = as.factor(c(rep("C", 50), rep("R", 50))), Veg_dense = seq(min(dat2$Veg_dense), max(dat2$Veg_dense), length.out = 50))
-prM10b <- predictSE(mod = M10b, newdata = ndM10b, se.fit = T, type = "response")
-prM10b <- data.frame(ndM10b, fit = round(prM10b$fit, 4), se = round(prM10b$se.fit, 4))
-prM10b$lci <- prM10b$fit - (prM10b$se * 1.96)
-prM10b$uci <- prM10b$fit + (prM10b$se * 1.96)
-head(prM10b)
-
-# Plot predictions from the additive model
-plot(prM10b$Veg_dense[prM10b$Type=="C"], prM10b$fit[prM10b$Type=="C"], pch=20, ylim=c(min(prM10b$lci), max(prM10b$uci)), xlab = "Veg. density", ylab = "Prob. of occurrence", type="l")
-lines(prM10b$Veg_dense[prM10b$Type=="C"], prM10b$lci[prM10b$Type=="C"], lty=2)
-lines(prM10b$Veg_dense[prM10b$Type=="C"], prM10b$uci[prM10b$Type=="C"], lty=2)
-lines(prM10b$Veg_dense[prM10b$Type=="R"], prM10b$fit[prM10b$Type=="R"], lty=1, col="red")
-lines(prM10b$Veg_dense[prM10b$Type=="R"], prM10b$lci[prM10b$Type=="R"], lty=2, col ="red")
-lines(prM10b$Veg_dense[prM10b$Type=="R"], prM10b$uci[prM10b$Type=="R"], lty=2, col ="red")
-
-AICc(Mnull.3); AICc(M10); AICc(M10a); AICc(M10b); AICc(M11) # M10b is best then M11
 
 # Lower vegetation densities at culvert and road locations had a positive influence on the probability of observing an animal, whereas increasing vegetation densities had a negative influence on the probability of observing an animal. 
 anova(Mnull.3, M10) # Significant
@@ -868,7 +647,6 @@ summary(M11) # Produce the type only model, Not quite significant
 logLik(M11)
 
 anova(Mnull.3, M11) # Not significant
-AICc(Mnull.3); AICc(M11)  # Only just better than null but not within 2 of the interactive and additive model so will not be plotted
 
 
 
@@ -889,34 +667,29 @@ AICc(Mnull.3); AICc(M12);AICc(M12a);AICc(M12b)# Null model is best
 
 
 
-AICc(Mnull.3); AICc(M10); AICc(M10a); AICc(M10b); AICc(M11); AICc(M12); AICc(M12a); AICc(M12b) # The additive vegetation model is best
+AICc(Mnull.3); AICc(M10); AICc(M10a); AICc(M10b); AICc(M11); AICc(M12); AICc(M12a); AICc(M12b) # The additive vegetation model is best M10b
 
 cand.set <- list(Mnull.3,M10,M10a, M10b, M11, M12, M12a, M12b)
 
 aictab(cand.set)
 
+# Predict from the additive model
+ndM10b <- data.frame(Type = as.factor(c(rep("C", 50), rep("R", 50))), Veg_dense = seq(min(dat2$Veg_dense), max(dat2$Veg_dense), length.out = 50))
+prM10b <- predictSE(mod = M10b, newdata = ndM10b, se.fit = T, type = "response")
+prM10b <- data.frame(ndM10b, fit = round(prM10b$fit, 4), se = round(prM10b$se.fit, 4))
+prM10b$lci <- prM10b$fit - (prM10b$se * 1.96)
+prM10b$uci <- prM10b$fit + (prM10b$se * 1.96)
+head(prM10b)
 
-## Plots for thesis
-dev.new(width=25, height=10, dpi=50, pointsize=35, noRStudioGD = T)
-par(mfrow=c(1, 2), mgp=c(2.5,1,0), mar=c(4,4,2,2), oma=c(0,0,0,6), cex = 1, las = 1)
-
-plot(prM10$Veg_dense[prM10$Type=="C"], prM10$fit[prM10$Type=="C"], pch=20, ylim=c(min(prM10$lci), max(prM10$uci)), xlab = "Veg. density", ylab = "Prob. of occurrence", type="l")
-lines(prM10$Veg_dense[prM10$Type=="C"], prM10$lci[prM10$Type=="C"], lty=2)
-lines(prM10$Veg_dense[prM10$Type=="C"], prM10$uci[prM10$Type=="C"], lty=2)
-lines(prM10$Veg_dense[prM10$Type=="R"], prM10$fit[prM10$Type=="R"], lty=1, col="red")
-lines(prM10$Veg_dense[prM10$Type=="R"], prM10$lci[prM10$Type=="R"], lty=2, col ="red")
-lines(prM10$Veg_dense[prM10$Type=="R"], prM10$uci[prM10$Type=="R"], lty=2, col ="red")
-
-plot(prM10b$Veg_dense[prM10b$Type=="C"], prM10b$fit[prM10b$Type=="C"], pch=20, ylim=c(min(prM10b$lci), max(prM10b$uci)), xlab = "Veg. density (m)", ylab = "Probability of occurrence", type="l", las = 1)
+# Plot predictions from the additive model
+plot(prM10b$Veg_dense[prM10b$Type=="C"], prM10b$fit[prM10b$Type=="C"], pch=20, ylim=c(min(prM10b$lci), max(prM10b$uci)), xlab = "Veg. density", ylab = "Prob. of occurrence", type="l")
 lines(prM10b$Veg_dense[prM10b$Type=="C"], prM10b$lci[prM10b$Type=="C"], lty=2)
 lines(prM10b$Veg_dense[prM10b$Type=="C"], prM10b$uci[prM10b$Type=="C"], lty=2)
 lines(prM10b$Veg_dense[prM10b$Type=="R"], prM10b$fit[prM10b$Type=="R"], lty=1, col="red")
 lines(prM10b$Veg_dense[prM10b$Type=="R"], prM10b$lci[prM10b$Type=="R"], lty=2, col ="red")
 lines(prM10b$Veg_dense[prM10b$Type=="R"], prM10b$uci[prM10b$Type=="R"], lty=2, col ="red")
 
-par(xpd=NA)
-legend(x=1.5, y=1,legend =c("Culvert", "Road"), col = c("black", "red"), lty=1, lwd =1, cex = 1, bty ="n", text.width = 0.2)
-par(xpd=F)
+
 
 
 ## For large species
@@ -960,7 +733,17 @@ summary(M15a) # Significant negative influence of small culverts on large specie
 #What is the Log Likelihood of this model?
 logLik(M15a)
 
-# Predict from this model
+
+M15b <- glmer(Large.pa ~ Type + Clvt_sz + (1 | Site), family = "binomial", data = dat2)# Produce additive model
+summary(M15b) # Significant negative influence of small culverts on large species occurrences
+
+
+AICc(Mnull.4); AICc(M13); AICc(M13a); AICc(M13b); AICc(M14); AICc(M15); AICc(M15a); AICc(M15b) # The size only model is the best model M15a
+cand.set <- list(Mnull.4,M13,M13a, M13b, M14, M15, M15a, M15b)
+
+aictab(cand.set)
+
+# Predict from the size only model
 ndM15a <- data.frame(Clvt_sz = as.factor(c(rep("small", 2), rep("large", 2))))
 prM15a <- predictSE(mod = M15a, newdata = ndM15a, se.fit = T, type = "response")
 prM15a <- data.frame(ndM15a, fit = round(prM15a$fit, 4), se = round(prM15a$se.fit, 4))
@@ -972,18 +755,6 @@ plot(c(1,2), prM15a$fit[c(1,3)], pch = 20, ylim=c(0,1), xlim=c(0.5,2.5), xlab = 
 axis(side=1, at=c(1,2), labels=c("small","large"))
 arrows(c(1,2), prM15a$lci[c(1,3)], c(1,2), prM15a$uci[c(1,3)], length = 0.05, code=3, angle=90)
 title(main = "(d) Large species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
-
-
-M15b <- glmer(Large.pa ~ Type + Clvt_sz + (1 | Site), family = "binomial", data = dat2)# Produce additive model
-summary(M15b) # Significant negative influence of small culverts on large species occurrences
-
-
-AICc(Mnull.4); AICc(M13); AICc(M13a); AICc(M13b); AICc(M14); AICc(M15); AICc(M15a); AICc(M15b) # The null model is the best model
-
-cand.set <- list(Mnull.4,M13,M13a, M13b, M14, M15, M15a, M15b)
-
-aictab(cand.set)
 
 
 
@@ -999,23 +770,6 @@ summary(M16) # Produce interactive model, Significant
 #What is the Log Likelihood of this model?
 logLik(M16)
 
-# Predict from the interactive model
-ndM16 <- data.frame(Type = as.factor(c(rep("C", 50), rep("R", 50))), Veg_dense = seq(min(dat2$Veg_dense), max(dat2$Veg_dense), length.out = 50))
-prM16 <- predictSE(mod = M16, newdata = ndM16, se.fit = T, type = "response")
-prM16 <- data.frame(ndM16, fit = round(prM16$fit, 4), se = round(prM16$se.fit, 4))
-prM16$lci <- prM16$fit - (prM16$se * 1.96)
-prM16$uci <- prM16$fit + (prM16$se * 1.96)
-
-
-# Plot predictions from this model
-plot(prM16$Veg_dense[prM16$Type=="C"], prM16$fit[prM16$Type=="C"], pch=20, ylim=c(min(prM16$lci), max(prM16$uci)), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type = "l", las = 1)
-lines(prM16$Veg_dense[prM16$Type=="C"], prM16$lci[prM16$Type=="C"], lty=2)
-lines(prM16$Veg_dense[prM16$Type=="C"], prM16$uci[prM16$Type=="C"], lty=2)
-lines(prM16$Veg_dense[prM16$Type=="R"], prM16$fit[prM16$Type=="R"], lty=1, col="red")
-lines(prM16$Veg_dense[prM16$Type=="R"], prM16$lci[prM16$Type=="R"], lty=2, col="red")
-lines(prM16$Veg_dense[prM16$Type=="R"], prM16$uci[prM16$Type=="R"], lty=2, col="red")
-title(main = "Small species", outer = F, adj = 0, cex.main = 1, line = 0.3)
-
 
 M16a <- glmer(Small.pa ~ Veg_dense + (1|Site), family = "binomial", data = dat2)
 summary(M16a) # Produce veg dense only model, not significant
@@ -1027,22 +781,6 @@ summary(M16b) # Produce additive model, significant
 #What is the Log Likelihood of this model?
 logLik(M16b)
 
-# Predict from the additive model
-ndM16b <- data.frame(Type = as.factor(c(rep("C", 50), rep("R", 50))), Veg_dense = seq(min(dat2$Veg_dense), max(dat2$Veg_dense), length.out = 50))
-prM16b <- predictSE(mod = M16b, newdata = ndM16b, se.fit = T, type = "response")
-prM16b <- data.frame(ndM16b, fit = round(prM16b$fit, 4), se = round(prM16b$se.fit, 4))
-prM16b$lci <- prM16b$fit - (prM16b$se * 1.96)
-prM16b$uci <- prM16b$fit + (prM16b$se * 1.96)
-
-# Plot predictions from this model
-plot(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$fit[prM16b$Type=="C"], pch=20, ylim=c(min(prM16$lci), max(prM16b$uci)), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type = "l", las = 1)
-lines(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$lci[prM16b$Type=="C"], lty=2)
-lines(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$uci[prM16b$Type=="C"], lty=2)
-lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$fit[prM16b$Type=="R"], lty=1, col="red")
-lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$lci[prM16b$Type=="R"], lty=2, col="red")
-lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$uci[prM16b$Type=="R"], lty=2, col="red")
-title(main = "Position + Veg. dense", outer = F, adj = 0, cex.main = 1, line = 0.3)
-
 
 
 M17 <- glmer(Small.pa ~ Type + (1|Site), family = "binomial", data = dat2)
@@ -1051,22 +789,8 @@ summary(M17) # Produce the type only model, Significant
 #What is the Log Likelihood of this model?
 logLik(M17)
 
-ndM17 <- data.frame(Type = as.factor(c(rep("C", 2), rep("R", 2))))
-prM17 <- predictSE(mod = M17, newdata = ndM17, se.fit = T, type = "response")
-prM17 <- data.frame(ndM17, fit = round(prM17$fit, 4), se = round(prM17$se.fit, 4))
-prM17$lci <- prM17$fit - (prM17$se * 1.96)
-prM17$uci <- prM17$fit + (prM17$se * 1.96)
-
-# Plot predictions from this model
-plot(c(1,2), prM17$fit[c(1,3)], pch = 20, ylim=c(0,1), xlim=c(0.5,2.5), xlab = "Camera position", ylab = "Probability of occurrence", type = "p", xaxt="n")
-axis(side=1, at=c(1,2), labels=c("culvert","road"))
-arrows(c(1,2), prM17$lci[c(1,3)], c(1,2), prM17$uci[c(1,3)], length = 0.05, code=3, angle=90)
-title(main = "(c) Small species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
-
 anova(Mnull.5, M17) # Significant
-AICc(Mnull.5); AICc(M17)  # Model 17 is better than the null model
 
-AICc(Mnull.5); AICc(M16); AICc(M16a); AICc(M16b); AICc(M17) # Model 17, the type only model is the best model.
 
 M18 <- glmer(Small.pa ~ Type * Clvt_sz + (1 | Site), family = "binomial", data = dat2)
 summary(M18) # Significant negative influence of culvert cameras at small culverts on small species occurrences
@@ -1082,23 +806,6 @@ logLik(M18a)
 M18b <- glmer(Small.pa ~ Type + Clvt_sz + (1 | Site), family = "binomial", data = dat2)# Produce additive model
 summary(M18b) # Significant negative influence of culvert cameras at small culverts but a significant positive influence of road cameras at small culverts on small species observations
 
-# Predict from this model 
-ndM18b <- data.frame(Type = as.factor(c(rep("C", 2), rep("R", 2))), Clvt_sz = as.factor(c(rep("small", 2), rep("large", 2))))
-prM18b <- predictSE(mod = M18b, newdata = ndM18b, se.fit = T, type = "response")
-prM18b <- data.frame(ndM18b, fit = round(prM18b$fit, 4), se = round(prM18b$se.fit, 4))
-prM18b$lci <- prM18b$fit - (prM18b$se * 1.96)
-prM18b$uci <- prM18b$fit + (prM18b$se * 1.96)
-
-
-# Plot predictions from this model
-plot(prM18b$Clvt_sz[prM18b$Type=="C"], prM18b$fit[prM18b$Type=="C"], pch=20, ylim=c(min(prM18b$lci), max(prM18b$uci)), xlab = "Culvert size", ylab = "Prob. of occurrence", type = "b")
-points(prM18b$Clvt_sz[prM18b$Type=="C"], prM18b$lci[prM18b$Type=="C"], lty=2)
-points(prM18b$Clvt_sz[prM18b$Type=="C"], prM18b$uci[prM18b$Type=="C"], lty=2)
-points(prM18b$Clvt_sz[prM18b$Type=="R"], prM18b$fit[prM18b$Type=="R"], lty=1, col="red")
-points(prM18b$Clvt_sz[prM18b$Type=="R"], prM18b$lci[prM18b$Type=="R"], lty=2, col="red")
-points(prM18b$Clvt_sz[prM18b$Type=="R"], prM18b$uci[prM18b$Type=="R"], lty=2, col="red")
-
-
 
 AICc(Mnull.5); AICc(M16); AICc(M16a); AICc(M16b); AICc(M17); AICc(M18); AICc(M18a); AICc(M18b) # M17, the type only model is best.
 
@@ -1107,6 +814,18 @@ cand.set <- list(Mnull.5,M16,M16a, M16b, M17, M18, M18a, M18b)
 
 aictab(cand.set)
 
+# Predict from the type only model
+ndM17 <- data.frame(Type = as.factor(c(rep("C", 2), rep("R", 2))))
+prM17 <- predictSE(mod = M17, newdata = ndM17, se.fit = T, type = "response")
+prM17 <- data.frame(ndM17, fit = round(prM17$fit, 4), se = round(prM17$se.fit, 4))
+prM17$lci <- prM17$fit - (prM17$se * 1.96)
+prM17$uci <- prM17$fit + (prM17$se * 1.96)
+
+# Plot predictions from this model
+plot(c(1,2), prM17$fit[c(1,3)], pch = 20, ylim=c(0,1), xlim=c(0.5,2.5), xlab = "Camera position", ylab = "Probability of occurrence", type = "p", xaxt="n")
+axis(side=1, at=c(1,2), labels=c("culvert","road"))
+arrows(c(1,2), prM17$lci[c(1,3)], c(1,2), prM17$uci[c(1,3)], length = 0.05, code=3, angle=90)
+title(main = "(c) Small species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
 
 
 
@@ -1135,7 +854,6 @@ lines(prM4b$Veg_dense[prM4b$Type=="R"], prM4b$uci[prM4b$Type=="R"], lty = 2, col
 title(main = "(b) Native species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
 
 
-
 plot(c(1,2), prM17$fit[c(1,3)], pch = 20, ylim=c(0,1), xlim=c(0.5,2.5), xlab = "Camera position", ylab = "Probability of occurrence", type = "p", xaxt="n")
 axis(side=1, at=c(1,2), labels=c("culvert","road"))
 arrows(c(1,2), prM17$lci[c(1,3)], c(1,2), prM17$uci[c(1,3)], length = 0.05, code=3, angle=90)
@@ -1150,6 +868,9 @@ title(main = "(d) Large species", outer = F, adj = 0, cex.main = 1, line = 0.3, 
 par(xpd=NA)
 legend(x=2.8, y=2.8, legend=c("Culvert", "Road"), col=c("black", "red"), lty=1, lwd=0.5, cex=1, bty="n", text.width=0.2, title = "Camera position")
 par(xpd=F)
+
+
+
 
 
 # Plots for supplementary material - interactive models that were better than the null model and within AICc2 of the additive model. 
@@ -1189,15 +910,6 @@ legend(x=3.6, y=1, legend=c("Culvert", "Road"), col=c("black", "red"), lty=1, lw
 par(xpd=F)
 
 
-plot(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$fit[prM16b$Type=="C"], pch = 20, ylim=c(0, 1), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type = "l", las = 1)
-lines(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$lci[prM16b$Type=="C"], lty = 2)
-lines(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$uci[prM16b$Type=="C"], lty = 2)
-lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$fit[prM16b$Type=="R"], lty = 1, col = "red")
-lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$lci[prM16b$Type=="R"], lty = 2, col = "red")
-lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$uci[prM16b$Type=="R"], lty = 2, col = "red")
-title(main = "(d) Small species", outer = F, adj =0, cex.main = 1, line = 0.3, font.main = 1)
-
-
 
 
 
@@ -1213,10 +925,10 @@ title(main = "(d) Small species", outer = F, adj =0, cex.main = 1, line = 0.3, f
 # Explore behavioural data
 
 head(beh); dim(beh) # Look at the first few rows of the data, there are 4714 individual triggers
-sum(table(beh$Behaviour)) # There are 4714 rows of data
-range(beh$Anim_num) # There are 1164 individual animals
-table(beh$Behaviour) # There are 73 culvert crossing occurrences, 2865 foraging occurrences, 505 road crossing occurences, and 1270 sitting/standing still occurrences in the behaviour data.
-sum(2865+1270) # What is the sum of the foraging and sitting still behaviours, 4135 occurences of 4714 individual triggers. 
+sum(table(beh$Behaviour)) # There are 4713 rows of data
+range(beh$Anim_num) # There are 11645 individual animals
+table(beh$Behaviour) # There are 73 culvert crossing occurrences, 2864 foraging occurrences, 506 road crossing occurrences, and 1270 sitting/standing still occurrences in the behaviour data.
+sum(2864+1270) # What is the sum of the foraging and sitting still behaviours, 4134 occurrences of 4713 individual triggers. 
 
 
 
@@ -1331,7 +1043,6 @@ beh2$anim_hr<-paste(beh2$Anim_num,beh2$Behaviour, beh2$Day, beh2$Month, beh2$Hou
 head(beh2); dim(beh2) # Check how this looks
 unique(beh2$anim_hr) # Check how this looks, not in order
 
-
 # We want to order the data so that when they are subset, we can take the first observation per hour
 beh2 <- beh2[order(beh2$Anim_num,beh2$Behaviour, beh2$Day, beh2$Month, beh2$Hour, beh2$Min, beh2$Sec),]
 rownames(beh2)<-1:nrow(beh2)
@@ -1368,6 +1079,8 @@ str(beh4) # Double check everything has been coded and imported correctly.
 dim(beh4); head(beh4) # There are 397 observations in beh4
 table(beh4$Behaviour) # There are 32 culvert crossings and 365 road crossings
 range(beh4$Site) # There are now only 26 sites
+ 
+
 
 # To work with site characteristics data better, need to create summaries of the vegetation data (average the vegetation height for each camera point). Want to determine if the probability of spotting individuals was influenced by vegetation height or density. Want to add extra columns to beh3 for road type (character), veg height (numeric), veg dense (character). Also want to determine the influence of road type on crossing behaviour. 
 
@@ -1440,7 +1153,7 @@ head(beh4); dim(beh4) # Check that this has worked, no new rows have been added 
 
 # We now have all the road characteristics data we wanted added to beh4
 
-# EXPLORE THE BEHAVIOURAL DATA
+# EXPLORE THE BEHAVIOURAL DATA without standardising for trapping effort
 t1 <- table(beh4$Behaviour, beh4$Species) # Shows the number of crossings for each species per behaviour.  
 t1[1,]/colSums(t1) # The proportion of each species using culverts to cross roads. 7% of Kangaroos used culverts to cross roads, all and lace monitors used culverts to cross roads, 50% of cows used culverts to cross roads, only 2% of Whiptail wallabies used culverts to cross roads. Although, this is not taking into account trap effort. 
 t1[1,]/sum(t1[1,], (t1[2,]*2)) #The proportion of each species using culverts to cross roads standardised for trapping effort. In reality 3-7% of Kangaroos used culverts to cross roads etc. 
@@ -1471,14 +1184,17 @@ summary(m13) # Not significant
 AICc(mnull); AICc(m10); AICc(m12); AICc(m13) # The model that fits the data best is still model 1, although model 1 and model 2 are quite similar
 
 
+# This is okay, but we really need to standardise for trapping effort
+
 
 rc7 <- rc[,c("Site", "Length", "Clvt_wdt", "Clvt_ht", "Clvt_wdt")] # Create a new data frame with culvert variables
 beh5 <- merge(beh4, rc7, by = "Site", all.x = T, all.y = F) # Merge this with beh4 but create a new data set 
 
+
 # We want to discard any observations of road crossings on culvert cameras
 dir() # Get the directory so we can access functions that are saved in separate files
 source("~/Desktop/Github_2/Roadinfra-Wildlife/Functions/Felicity_Functions.R") # Load the functions to this script 
-tidy.df
+tidy.df # Check it is working
 head(beh5); dim(beh5) # Check the head of the data
 length(unique(beh2$Site)) # There are 14 sites in this dataset
 beh6 <- beh5[-which(beh5$Behaviour == "RX" & beh5$Type == "C"),] # Remove RX on culvert cameras
