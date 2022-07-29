@@ -380,11 +380,18 @@ cor.test(ifelse(dat2$Clvt_sz == "large", 1,0), dat2$Length) # 0.024, p=0.747
 cor.test(ifelse(dat2$Clvt_sz == "large",1,0), ifelse(dat2$Rd_typ == "major", 1,0)) #-0.09, p=0.199
 
 
+# Make the Helvetica fonts available to R
+quartzFonts(helvetica = c("Helvetica Neue Light", 
+                           "Helvetica Neue Bold", "Helvetica Neue Light Italic", 
+                           "Helvetica Neue Bold Italic"))
+
 
 
 ## Create the plots for appendix for the occurrence data
 dev.new(width=20, height=20, dpi=80, pointsize=28, noRStudioGD= T)
-par(mfrow=c(2, 2), mgp=c(2.5,1,0), mar=c(4,4,3,3), cex = 1, las = 1)
+par(mfrow=c(2, 2), mgp=c(2.5,1,0), mar=c(4,4,3,3), cex = 1, las = 1, family = 'helvetica')
+setEPS() # Set postscript arguments
+postscript("FigA2.eps") # Start graphics device driver
 
 plot(dat2$Length, dat2$Veg_dense, xlab = "Culvert length (m)", ylab = "Vegetation density (m)", las = 1) # As vegetation density increases so does length
 title(main = "(a)", outer = F, adj = 0, cex.main = 1, line = 0.3)
@@ -400,6 +407,7 @@ plot(dat2$Clvt_sz, dat2$Length, xlab = "Culvert size", ylab = "Road width/Culver
 title(main = "(c)", outer = F, adj = 0, cex.main = 1, line = 0.3)
 legend("topleft", legend = "r = 0.02, p = 0.74", cex = 1, bty = "n", text.width = 1)
 
+dev.off() # Finish export
 
 
 
@@ -830,11 +838,12 @@ title(main = "(c) Small species", outer = F, adj = 0, cex.main = 1, line = 0.3, 
 
 
 
-## Plots for paper - ensure that the y limit is set as 0,1. As these graphs are the probability of occurrence and probabilities are bounded between 0 and 1, we want this to be consistent and not have different y minimums and maximums
-
+## Plots for probability of occurrence
 
 dev.new(width=12, height=10, dpi=80, pointsize=18, noRStudioGD = T)
-par(mfrow=c(2,2), mgp=c(2.5,1,0), mar=c(4,4,2,2), oma=c(0,0,0,6), cex = 1, las =1)
+par(mfrow=c(2,2), mgp=c(2.5,1,0), mar=c(4,4,2,2), oma=c(0,0,0,6), cex = 1, las =1, family = 'helvetica')
+setEPS() # Set postscript arguments
+postscript("Fig2.eps") # Start graphics device driver
 
 plot(prM10b$Veg_dense[prM10b$Type=="C"], prM10b$fit[prM10b$Type=="C"], pch=20, ylim=c(0,1), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type = "l", las = 1)
 lines(prM10b$Veg_dense[prM10b$Type=="C"], prM10b$lci[prM10b$Type=="C"], lty = 2)
@@ -868,6 +877,7 @@ title(main = "(d) Large species", outer = F, adj = 0, cex.main = 1, line = 0.3, 
 par(xpd=NA)
 legend(x=2.8, y=2.8, legend=c("Culvert", "Road"), col=c("black", "red"), lty=1, lwd=0.5, cex=1, bty="n", text.width=0.2, title = "Camera position")
 par(xpd=F)
+dev.off() # Finish export
 
 
 
@@ -875,7 +885,9 @@ par(xpd=F)
 
 # Plots for supplementary material - interactive models that were better than the null model and within AICc2 of the additive model 
 dev.new(width=12, height=10, dpi=80, pointsize=18, noRStudioGD = T)
-par(mfrow=c(2,2), mgp=c(2.5,1,0), mar=c(4,4,2,2), oma=c(0,0,0,6), cex = 1, las =1)
+par(mfrow=c(2,2), mgp=c(2.5,1,0), mar=c(4,4,2,2), oma=c(0,0,0,6), cex = 1, las =1, family = 'helvetica')
+setEPS() # Set postscript arguments
+postscript("FigA5.eps") # Start graphics device driver
 
 
 plot(prM10$Veg_dense[prM10$Type=="C"], prM10$fit[prM10$Type=="C"], pch=20, ylim=c(0, 1), xlab = "Vegetation density", ylab = "Probability of occurrence", type="l")
@@ -917,6 +929,7 @@ lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$lci[prM16b$Type=="R"], lty = 2,
 lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$uci[prM16b$Type=="R"], lty = 2, col = "red")
 title(main = "(d) Small species", outer = F, adj =0, cex.main = 1, line = 0.3, font.main = 1)
 
+dev.off() # Finish export
 
 
 
@@ -1427,7 +1440,9 @@ table(beh.site$Site, beh.site$Clvt_sz) # What sizes are the culverts depending o
 
 # Plots for appendix
 dev.new(width=20, height=20, dpi=80, pointsize=30, noRStudioGD = T)
-par(mfrow=c(3, 3), mgp=c(2.5,1,0), mar=c(4,4,3,3))
+par(mfrow=c(3, 3), mgp=c(2.5,1,0), mar=c(4,4,3,3), family = 'helvetica')
+setEPS() # Set postscript arguments
+postscript("FigA3.eps") # Start graphics device driver
 
 plot(beh.site$Clvt_sz, beh.site$VegC, xlab = "Culvert size", ylab = "Vegetation density at culvert (m)", las = 1) 
 title(main = "(a)", outer = F, adj = 0, cex.main = 1, line = 0.3)
@@ -1461,6 +1476,7 @@ plot(beh.site$Clvt_sz, beh.site$Length, xlab = "Culvert size", ylab = "Culvert L
 title(main = "(h)", outer = F, adj = 0, cex.main = 1, line = 0.3)
 legend("topleft", legend = "r = -0.20, p = 0.29", cex = 1, bty = "n", text.width = 5)
 
+dev.off() # Finish exporting
 
 
 # How does culvert size influence the proportion of crossings under the culvert
@@ -1572,7 +1588,9 @@ plot(beh.site$Vegmean, beh.site$Clvt_ht)# Plot this
 
 # Plots for appendix
 dev.new(width=20, height=20, dpi=80, pointsize=30, noRStudioGD = T)
-par(mfrow=c(3, 3), mgp=c(2.5,1,0), mar=c(4,4,3,3))
+par(mfrow=c(3, 3), mgp=c(2.5,1,0), mar=c(4,4,3,3), family = 'helvetica')
+setEPS() # Set postscript arguments
+postscript("FigA4.eps") # Start graphics device driver
 
 plot(beh.site$Vegmean, beh.site$VegC, xlab = "Average vegetation density (m)", ylab = "Vegetation density at culvert (m)", las = 1)
 title(main = "(a)", outer = F, adj = 0, cex.main = 1, line = 0.3)
@@ -1606,6 +1624,7 @@ plot(beh.site$Vegmean, beh.site$Length, xlab = "Average vegetation density (m)",
 title(main = "(g)", outer = F, adj = 0, cex.main = 1, line = 0.3)
 legend("topleft", legend = "r = 0.97, p = <0.001", cex = 1, bty = "n", text.width = 5)
 
+dev.off() # Finish export
 
 
 # Models
