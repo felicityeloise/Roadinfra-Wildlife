@@ -388,7 +388,7 @@ quartzFonts(helvetica = c("Helvetica Neue Light",
 
 
 ## Create the plots for appendix for the occurrence data
-dev.new(width=20, height=20, dpi=80, pointsize=28, noRStudioGD= F) # Save as image 900x900
+dev.new(width=20, height=20, dpi=80, pointsize=28, noRStudioGD= T) # Save as image 900x900
 par(mfrow=c(2, 2), mgp=c(2.5,1,0), mar=c(4,4,3,3), cex = 1, las = 1, family = 'helvetica')
 
 
@@ -533,6 +533,24 @@ AICc(Mnull.1); AICc(M4); AICc(M4a); AICc(M4b); AICc(M5); AICc(M6); AICc(M6a); AI
 cand.set <- list(Mnull.1,M4,M4a, M4b, M5, M6, M6a, M6b)
 
 aictab(cand.set)
+
+# Predict from this interactive model
+ndM4 <- data.frame(Type = as.factor(c(rep("C", 50), rep("R", 50))), Veg_dense = seq(min(dat2$Veg_dense), max(dat2$Veg_dense), length.out = 50))
+prM4 <- predictSE(mod = M4, newdata = ndM4, se.fit = T, type = "response")
+prM4 <- data.frame(ndM4, fit = round(prM4$fit, 4), se = round(prM4$se.fit, 4))
+prM4$lci <- prM4$fit - (prM4$se * 1.96)
+prM4$uci <- prM4$fit + (prM4$se * 1.96)
+
+# Plot predictions from interactive model
+plot(prM4$Veg_dense[prM4$Type=="C"], prM4$fit[prM4$Type=="C"], pch=20, ylim=c(min(prM4$lci), max(prM4$uci)), xlab = "Veg. density", ylab = "Prob. of occurrence", type="l")
+lines(prM4$Veg_dense[prM4$Type=="C"], prM4$lci[prM4$Type=="C"], lty=2)
+lines(prM4$Veg_dense[prM4$Type=="C"], prM4$uci[prM4$Type=="C"], lty=2)
+lines(prM4$Veg_dense[prM4$Type=="R"], prM4$fit[prM4$Type=="R"], lty=1, col="red")
+lines(prM4$Veg_dense[prM4$Type=="R"], prM4$lci[prM4$Type=="R"], lty=2, col ="red")
+lines(prM4$Veg_dense[prM4$Type=="R"], prM4$uci[prM4$Type=="R"], lty=2, col ="red")
+title(main = "(b) Native species", outer = F, adj = 0, cex.main = 1, line = 0.3)
+
+
 
 # Predict from Model 4b
 ndM4b <- data.frame(Type = as.factor(c(rep("C", 50), rep("R", 50))), Veg_dense = seq(min(dat2$Veg_dense), max(dat2$Veg_dense), length.out = 50))
@@ -680,6 +698,24 @@ cand.set <- list(Mnull.3,M10,M10a, M10b, M11, M12, M12a, M12b)
 
 aictab(cand.set)
 
+
+
+# Predict from the interactive model
+ndM10 <- data.frame(Type = as.factor(c(rep("C", 50), rep("R", 50))), Veg_dense = seq(min(dat2$Veg_dense), max(dat2$Veg_dense), length.out = 50))
+prM10 <- predictSE(mod = M10, newdata = ndM10, se.fit = T, type = "response")
+prM10 <- data.frame(ndM10, fit = round(prM10$fit, 4), se = round(prM10$se.fit, 4))
+prM10$lci <- prM10$fit - (prM10$se * 1.96)
+prM10$uci <- prM10$fit + (prM10$se * 1.96)
+
+# Plot predictions from the interactive model
+plot(prM10$Veg_dense[prM10$Type=="C"], prM10$fit[prM10$Type=="C"], pch=20, ylim=c(min(prM10$lci), max(prM10$uci)), xlab = "Veg. density", ylab = "Prob. of occurrence", type="l")
+lines(prM10$Veg_dense[prM10$Type=="C"], prM10$lci[prM10$Type=="C"], lty=2)
+lines(prM10$Veg_dense[prM10$Type=="C"], prM10$uci[prM10$Type=="C"], lty=2)
+lines(prM10$Veg_dense[prM10$Type=="R"], prM10$fit[prM10$Type=="R"], lty=1, col="red")
+lines(prM10$Veg_dense[prM10$Type=="R"], prM10$lci[prM10$Type=="R"], lty=2, col ="red")
+lines(prM10$Veg_dense[prM10$Type=="R"], prM10$uci[prM10$Type=="R"], lty=2, col ="red")
+
+
 # Predict from the additive model
 ndM10b <- data.frame(Type = as.factor(c(rep("C", 50), rep("R", 50))), Veg_dense = seq(min(dat2$Veg_dense), max(dat2$Veg_dense), length.out = 50))
 prM10b <- predictSE(mod = M10b, newdata = ndM10b, se.fit = T, type = "response")
@@ -777,6 +813,24 @@ summary(M16) # Produce interactive model, Significant
 #What is the Log Likelihood of this model?
 logLik(M16)
 
+# Predict from the interactive model
+ndM16 <- data.frame(Type = as.factor(c(rep("C", 50), rep("R", 50))), Veg_dense = seq(min(dat2$Veg_dense), max(dat2$Veg_dense), length.out = 50))
+prM16 <- predictSE(mod = M16, newdata = ndM16, se.fit = T, type = "response")
+prM16 <- data.frame(ndM16, fit = round(prM16$fit, 4), se = round(prM16$se.fit, 4))
+prM16$lci <- prM16$fit - (prM16$se * 1.96)
+prM16$uci <- prM16$fit + (prM16$se * 1.96)
+
+
+# Plot predictions from this model
+plot(prM16$Veg_dense[prM16$Type=="C"], prM16$fit[prM16$Type=="C"], pch=20, ylim=c(min(prM16$lci), max(prM16$uci)), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type = "l", las = 1)
+lines(prM16$Veg_dense[prM16$Type=="C"], prM16$lci[prM16$Type=="C"], lty=2)
+lines(prM16$Veg_dense[prM16$Type=="C"], prM16$uci[prM16$Type=="C"], lty=2)
+lines(prM16$Veg_dense[prM16$Type=="R"], prM16$fit[prM16$Type=="R"], lty=1, col="red")
+lines(prM16$Veg_dense[prM16$Type=="R"], prM16$lci[prM16$Type=="R"], lty=2, col="red")
+lines(prM16$Veg_dense[prM16$Type=="R"], prM16$uci[prM16$Type=="R"], lty=2, col="red")
+title(main = "Small species", outer = F, adj = 0, cex.main = 1, line = 0.3)
+
+
 
 M16a <- glmer(Small.pa ~ Veg_dense + (1|Site), family = "binomial", data = dat2)
 summary(M16a) # Produce veg dense only model, not significant
@@ -787,6 +841,23 @@ M16b <- glmer(Small.pa ~ Type + Veg_dense + (1|Site), family = "binomial", data 
 summary(M16b) # Produce additive model, significant
 #What is the Log Likelihood of this model?
 logLik(M16b)
+
+# Predict from the additive model
+ndM16b <- data.frame(Type = as.factor(c(rep("C", 50), rep("R", 50))), Veg_dense = seq(min(dat2$Veg_dense), max(dat2$Veg_dense), length.out = 50))
+prM16b <- predictSE(mod = M16b, newdata = ndM16b, se.fit = T, type = "response")
+prM16b <- data.frame(ndM16b, fit = round(prM16b$fit, 4), se = round(prM16b$se.fit, 4))
+prM16b$lci <- prM16b$fit - (prM16b$se * 1.96)
+prM16b$uci <- prM16b$fit + (prM16b$se * 1.96)
+
+# Plot predictions from this model
+plot(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$fit[prM16b$Type=="C"], pch=20, ylim=c(min(prM16$lci), max(prM16b$uci)), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type = "l", las = 1)
+lines(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$lci[prM16b$Type=="C"], lty=2)
+lines(prM16b$Veg_dense[prM16b$Type=="C"], prM16b$uci[prM16b$Type=="C"], lty=2)
+lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$fit[prM16b$Type=="R"], lty=1, col="red")
+lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$lci[prM16b$Type=="R"], lty=2, col="red")
+lines(prM16b$Veg_dense[prM16b$Type=="R"], prM16b$uci[prM16b$Type=="R"], lty=2, col="red")
+title(main = "Position + Veg. dense", outer = F, adj = 0, cex.main = 1, line = 0.3)
+
 
 
 
@@ -839,7 +910,7 @@ title(main = "(c) Small species", outer = F, adj = 0, cex.main = 1, line = 0.3, 
 
 ## Plots for probability of occurrence
 
-dev.new(width=12, height=10, dpi=80, pointsize=18, noRStudioGD = F) # Save as image as 850 X 700 - fig2
+dev.new(width=12, height=10, dpi=80, pointsize=18, noRStudioGD = T) # Save as image as 850 X 700 - fig2
 par(mfrow=c(2,2), mgp=c(2.5,1,0), mar=c(4,4,2,2), oma=c(0,0,0,6), cex = 1, las =1, family = 'helvetica')
 
 plot(prM10b$Veg_dense[prM10b$Type=="C"], prM10b$fit[prM10b$Type=="C"], pch=20, ylim=c(0,1), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type = "l", las = 1)
@@ -881,7 +952,7 @@ par(xpd=F)
 
 
 # Plots for supplementary material - interactive models that were better than the null model and within AICc2 of the additive model 
-dev.new(width=12, height=10, dpi=80, pointsize=18, noRStudioGD = F) # Save as eps 850 X 700 - fig a5
+dev.new(width=12, height=10, dpi=80, pointsize=18, noRStudioGD = T) # Save as eps 850 X 700 - fig a5
 par(mfrow=c(2,2), mgp=c(2.5,1,0), mar=c(4,4,2,2), oma=c(0,0,0,6), cex = 1, las =1, family = 'helvetica')
 
 
@@ -1434,7 +1505,7 @@ table(beh.site$Site, beh.site$Clvt_sz) # What sizes are the culverts depending o
 
 
 # Plots for appendix
-dev.new(width=20, height=20, dpi=80, pointsize=60, noRStudioGD = F) 
+dev.new(width=20, height=20, dpi=80, pointsize=30, noRStudioGD = T) 
 par(mfrow=c(3, 3), mgp=c(2.5,1,0), mar=c(4,4,3,3), family = 'helvetica') # Fig A3 850x800
 
 
@@ -1580,7 +1651,7 @@ plot(beh.site$Vegmean, beh.site$Clvt_ht)# Plot this
 
 
 # Plots for appendix
-dev.new(width=20, height=20, dpi=80, pointsize=30, noRStudioGD = F) # Figure A4 850 x 800
+dev.new(width=20, height=20, dpi=80, pointsize=30, noRStudioGD = T) # Figure A4 850 x 800
 par(mfrow=c(3, 3), mgp=c(2.5,1,0), mar=c(4,4,3,3), family = 'helvetica')
 
 
