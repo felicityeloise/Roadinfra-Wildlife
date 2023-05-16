@@ -24,7 +24,7 @@ Charles FE, Brady MJ, Smith AL (2023). Use of road infrastructure for movement b
 
 ## License
 
-The Roadinfra-Wildlife project by Felicity charles and Annabel Smith is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.
+The Roadinfra-Wildlife project by Felicity Charles and Annabel Smith is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.
 
 Based on a work at https://github.com/FelicityC-UQ/Roadinfra-Wildlife.
 
