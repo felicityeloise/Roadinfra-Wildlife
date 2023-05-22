@@ -2,6 +2,8 @@
 
 Analysis of under-road culvert use in terrestrial vertebrates.
 
+This project aimed to determine whether Australian wildlife used under-road drainage culverts or crossed roads directly. It also examined whether interactions between animal characteristics, the environment and culvert properties influenced culvert use.
+
 ## Content Description
 
 00_Data: wildlife and site data
