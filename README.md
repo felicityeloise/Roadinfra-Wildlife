@@ -18,7 +18,7 @@ Analysis of under-road culvert use in terrestrial vertebrates.
 
 ## Code Authors
 
-elicity Charles and Annabel Smith (unless otherwise stated within script)
+Felicity Charles and Annabel Smith (unless otherwise stated within script)
 
 ## Manuscript
 
