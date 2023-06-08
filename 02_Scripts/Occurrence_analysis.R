@@ -829,8 +829,8 @@ title(main = "(c) Small species", outer = F, adj = 0, cex.main = 1, line = 0.3, 
 
 ## 9. Plots for probability of occurrence ----
 
-dev.new(width=12, height=10, res = 300, dpi=80, pointsize=18, noRStudioGD = F) # Save as image as 850 X 700 - fig2
-par(mfrow=c(2,2), mgp=c(2.5,1,0), mar=c(4,4,2,2), oma=c(0,0,0,6), cex = 1.5, las =1, family = 'helvetica')
+dev.new(width=12, height=10, res = 300, dpi=80, pointsize=18, noRStudioGD = F) # Save as image as 1250 X 1100 - fig2
+par(mfrow=c(2,2), mgp=c(2.5,1,0), mar=c(4,4,2,1), oma=c(0,0,0,6), cex = 1.5, las =1, family = 'helvetica')
 
 plot(prM10b$Veg_dense[prM10b$Type=="C"], prM10b$fit[prM10b$Type=="C"], pch=20, ylim=c(0,1), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type = "l", las = 1)
 lines(prM10b$Veg_dense[prM10b$Type=="C"], prM10b$lci[prM10b$Type=="C"], lty = 2)
@@ -839,6 +839,10 @@ lines(prM10b$Veg_dense[prM10b$Type=="R"], prM10b$fit[prM10b$Type=="R"], lty = 1,
 lines(prM10b$Veg_dense[prM10b$Type=="R"], prM10b$lci[prM10b$Type=="R"], lty = 2, col = "red")
 lines(prM10b$Veg_dense[prM10b$Type=="R"], prM10b$uci[prM10b$Type=="R"], lty = 2, col = "red")
 title(main = "(a) All animals", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
+
+par(xpd=NA)
+legend(x=1.91, y=1.5, legend=c("Culvert", "Road"), col=c("black", "red"), lty=1, lwd=2, cex=0.95, bty="n", text.width=0.2, title = "Camera position", seg.len = 0.5, x.intersp = 0.1, y.intersp = 0.45)
+par(xpd=F)
 
 
 plot(prM4b$Veg_dense[prM4b$Type=="C"], prM4b$fit[prM4b$Type=="C"], pch=20, ylim=c(0,1), xlab = "Vegetation density (m)", ylab = "Probability of occurrence", type = "l", las = 1)
@@ -861,9 +865,7 @@ arrows(c(1,2), prM15a$lci[c(1,3)], c(1,2), prM15a$uci[c(1,3)], length = 0.05, co
 title(main = "(d) Large species", outer = F, adj = 0, cex.main = 1, line = 0.3, font.main = 1)
 
 
-par(xpd=NA)
-legend(x=2.5, y=2.8, legend=c("Culvert", "Road"), col=c("black", "red"), lty=1, lwd=0.5, cex=1, bty="n", text.width=0.2, title = "Camera position")
-par(xpd=F)
+
 
 
 
