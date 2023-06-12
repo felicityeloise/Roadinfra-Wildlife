@@ -307,7 +307,8 @@ par(mfrow=c(2, 2), mgp=c(2.5,1,0), mar=c(4,4,3,3), cex = 1, las = 1, family = 'h
 
 plot(dat2$Length, dat2$Veg_dense, xlab = "Culvert length (m)", ylab = "Vegetation density (m)", las = 1) # As vegetation density increases so does length
 title(main = "(a)", outer = F, adj = 0, cex.main = 1, line = 0.3)
-legend("topleft", legend = "r = 0.23, p = 0.001", cex = 1, bty ="n", text.width = 1)
+legend("top", legend = "r = 0.23,
+p = 0.001", cex = 1, bty ="n", text.width = 1)
 
 
 plot(dat2$Clvt_sz, dat2$Veg_dense, xlab = "Culvert size", ylab = "Vegetation density (m)", las = 1)
