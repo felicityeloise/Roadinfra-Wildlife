@@ -24,7 +24,7 @@ Felicity Charles and Annabel Smith (unless otherwise stated within script)
 
 ## Manuscript
 
-Charles FE, Brady MJ, Smith AL (2023). Use of road infrastructure for movement by common terrestrial vertebrates. Under review 16/5/2023.
+Charles FE, Brady MJ, Smith AL (2023). Use of road infrastructure for movement by common terrestrial vertebrates. Wildlife Letters, https://doi.org/10.1002/wll2.12019
 
 ## License
 
