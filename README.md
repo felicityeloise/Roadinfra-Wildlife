@@ -26,6 +26,10 @@ Felicity Charles and Annabel Smith (unless otherwise stated within script)
 
 Charles FE, Brady MJ, Smith AL (2023). Use of road infrastructure for movement by common terrestrial vertebrates. Wildlife Letters, https://doi.org/10.1002/wll2.12019
 
+## Zenodo archive
+
+https://doi.org/10.5281/zenodo.7955339
+
 ## License
 
 The Roadinfra-Wildlife project by Felicity Charles and Annabel Smith is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.
